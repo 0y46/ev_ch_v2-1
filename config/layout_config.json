@@ -1,0 +1,92 @@
+{
+    "voltage_graph": {
+        "pos": {
+            "x": 0,
+            "y": 408
+        },
+        "size": {
+            "width": 748,
+            "height": 290
+        }
+    },
+    "current_graph": {
+        "pos": {
+            "x": 0,
+            "y": 700
+        },
+        "size": {
+            "width": 955,
+            "height": 262
+        }
+    },
+    "power_graph": {
+        "pos": {
+            "x": 956,
+            "y": 700
+        },
+        "size": {
+            "width": 955,
+            "height": 262
+        }
+    },
+    "charging_table": {
+        "pos": {
+            "x": 1431,
+            "y": 117
+        },
+        "size": {
+            "width": 480,
+            "height": 290
+        }
+    },
+    "ev_charging_table": {
+        "pos": {
+            "x": 1330,
+            "y": 408
+        },
+        "size": {
+            "width": 581,
+            "height": 290
+        }
+    },
+    "grid_settings_table": {
+        "pos": {
+            "x": 0,
+            "y": 117
+        },
+        "size": {
+            "width": 480,
+            "height": 290
+        }
+    },
+    "gauge_grid": {
+        "pos": {
+            "x": 749,
+            "y": 408
+        },
+        "size": {
+            "width": 581,
+            "height": 290
+        }
+    },
+    "control_buttons": {
+        "pos": {
+            "x": 0,
+            "y": 67
+        },
+        "size": {
+            "width": 240,
+            "height": 50
+        }
+    },
+    "energy_hub": {
+        "pos": {
+            "x": 481,
+            "y": 117
+        },
+        "size": {
+            "width": 948,
+            "height": 290
+        }
+    }
+}
