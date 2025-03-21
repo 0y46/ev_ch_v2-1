@@ -114,18 +114,23 @@ class DataSimulator:
         tuple
             A tuple containing (time_data, va_data, vb_data, vc_data).
         """
+        # Initialize variables with default values to avoid UnboundLocalError
+        time_data = np.array([])
+        va_data = np.array([])
+        vb_data = np.array([])
+        vc_data = np.array([])
+        
         if self.use_real_data and self.udp_client:
             # Get data from UDP client
             time_data, va_data, vb_data, vc_data = self.udp_client.get_waveform_data('Grid_Voltage', n_points=None)
             
             # Adjust timestamps to be relative to application start time
-        if len(time_data) > 0:
-            # Calculate time offset between UDP client and application
-            time_offset = time.time() - self.time_start - time_data[-1]
-            # Shift all timestamps to match application timeline
-            time_data = np.array([t + time_offset for t in time_data])
+            if len(time_data) > 0:  # This needs to be indented properly!
+                # Calculate time offset between UDP client and application
+                time_offset = time.time() - self.time_start - time_data[-1]
+                # Shift all timestamps to match application timeline
+                time_data = np.array([t + time_offset for t in time_data])
                 
-            return time_data, va_data, vb_data, vc_data
         else:
             # Default to 300 points for simulation if n_points is None
             sim_n_points = 300 if n_points is None else n_points
@@ -140,12 +145,17 @@ class DataSimulator:
             vc = self.voltage_amplitude * np.sin(2 * np.pi * self.frequency * t + phase_shift)
             
             # Add some random noise to make it look more realistic
-            noise = np.random.normal(0, 0.01 * self.voltage_amplitude, n_points)
+            noise = np.random.normal(0, 0.01 * self.voltage_amplitude, sim_n_points)  # Fixed n_points to sim_n_points
             va += noise
             vb += noise
             vc += noise
             
-            return t, va, vb, vc
+            time_data = t
+            va_data = va
+            vb_data = vb
+            vc_data = vc
+        
+        return time_data, va_data, vb_data, vc_data
     
     def get_current_data(self, n_points=None):
         """
@@ -161,18 +171,23 @@ class DataSimulator:
         tuple
             A tuple containing (time_data, ia_data, ib_data, ic_data).
         """
+        # Initialize variables with default values to avoid UnboundLocalError
+        time_data = np.array([])
+        ia_data = np.array([])
+        ib_data = np.array([])
+        ic_data = np.array([])
+        
         if self.use_real_data and self.udp_client:
             # Get data from UDP client
             time_data, ia_data, ib_data, ic_data = self.udp_client.get_waveform_data('Grid_Current', n_points=None)
             
             # Adjust timestamps to be relative to application start time
-            if len(time_data) > 0:
+            if len(time_data) > 0:  # Properly indented!
                 # Calculate time offset between UDP client and application
                 time_offset = time.time() - self.time_start - time_data[-1]
                 # Shift all timestamps to match application timeline
                 time_data = np.array([t + time_offset for t in time_data])
                 
-            return time_data, ia_data, ib_data, ic_data
         else:
             # Default to 300 points for simulation if n_points is None
             sim_n_points = 300 if n_points is None else n_points
@@ -187,12 +202,17 @@ class DataSimulator:
             ic = self.current_amplitude * np.sin(2 * np.pi * self.frequency * t + phase_shift - power_factor_angle)
             
             # Add some random noise to make it look more realistic
-            noise = np.random.normal(0, 0.02 * self.current_amplitude, n_points)
+            noise = np.random.normal(0, 0.02 * self.current_amplitude, sim_n_points)  # Fixed n_points to sim_n_points
             ia += noise
             ib += noise
             ic += noise
             
-            return t, ia, ib, ic
+            time_data = t
+            ia_data = ia
+            ib_data = ib
+            ic_data = ic
+        
+        return time_data, ia_data, ib_data, ic_data
     
     def get_power_data(self, n_points=None):
         """
@@ -208,18 +228,24 @@ class DataSimulator:
         tuple
             A tuple containing (time_data, p_grid, p_pv, p_ev, p_battery).
         """
+        # Initialize variables with default values to avoid UnboundLocalError
+        time_data = np.array([])
+        p_grid = np.array([])
+        p_pv = np.array([])
+        p_ev = np.array([])
+        p_battery = np.array([])
+        
         if self.use_real_data and self.udp_client:
             # Get data from UDP client
             time_data, p_grid, p_pv, p_ev, p_battery = self.udp_client.get_power_data(n_points=None)
             
             # Adjust timestamps to be relative to application start time
-            if len(time_data) > 0:
+            if len(time_data) > 0:  # Properly indented!
                 # Calculate time offset between UDP client and application
                 time_offset = time.time() - self.time_start - time_data[-1]
                 # Shift all timestamps to match application timeline
                 time_data = np.array([t + time_offset for t in time_data])
                 
-            return time_data, p_grid, p_pv, p_ev, p_battery
         else:
             # Default to 300 points for simulation if n_points is None
             sim_n_points = 300 if n_points is None else n_points
@@ -234,7 +260,9 @@ class DataSimulator:
             # Grid power = -(PV + EV + Battery)
             p_grid = -(p_pv + p_ev + p_battery)
             
-            return t, p_grid, p_pv, p_ev, p_battery
+            time_data = t
+        
+        return time_data, p_grid, p_pv, p_ev, p_battery
     
     def get_table_data(self):
         """
@@ -442,10 +470,10 @@ class DataSimulator:
         else:
             # Use consistent SoC values from stored parameters
             return {
-                "s1_status": random.randint(2, 2),
-                "s2_status": random.randint(0, 0),
-                "s3_status": random.randint(0, 0),
-                "s4_status": random.randint(2, 2),
+                "s1_status": random.randint(0, 2),
+                "s2_status": random.randint(0, 2),
+                "s3_status": random.randint(0, 2),
+                "s4_status": random.randint(0, 2),
                 "ev_soc": self.ev_soc,  # Use exact same stored value
                 "battery_soc": self.battery_soc  # Use exact same stored value
             }

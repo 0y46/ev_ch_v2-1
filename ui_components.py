@@ -1252,12 +1252,12 @@ class EnergyHubWidget(FixedWidget):
         elif status == 1:  # On
             label.setPixmap(self.images['on'].scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         elif status == 2:  # Right direction
-            movie = QMovie("right.gif")
+            movie = QMovie("imgs/right.gif")
             label.setMovie(movie)
             movie.setScaledSize(QSize(80, 80))
             movie.start()
         elif status == 3:  # Left direction
-            movie = QMovie("left.gif")
+            movie = QMovie("imgs/left.gif")
             label.setMovie(movie)
             movie.setScaledSize(QSize(80, 80))
             movie.start()
