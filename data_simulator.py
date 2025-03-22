@@ -6,7 +6,7 @@ This module provides simulated or real data for the UI components.
 import time
 import numpy as np
 import random
-from udp_client import UDPClient
+from unified_udp import get_unified_udp
 
 class DataSimulator:
     """
@@ -17,7 +17,7 @@ class DataSimulator:
     2. Real-time mode: Get data from a UDP client connected to real hardware
     """
     
-    def __init__(self, use_real_data=False, udp_ip="0.0.0.0", udp_port=5000):
+    def __init__(self, use_real_data=False, udp_ip="0.0.0.0", udp_port=5000, unified_udp=None):
         """
         Initialize the data simulator.
         
@@ -29,6 +29,8 @@ class DataSimulator:
             IP address to listen on for UDP packets.
         udp_port : int
             Port to listen on for UDP packets.
+        unified_udp : UnifiedUDPHandler
+            Reference to the unified UDP handler (if using real data)
         """
         self.time_start = time.time()
         
@@ -49,7 +51,7 @@ class DataSimulator:
         self.demand_response = True
         self.v2g = True  # Vehicle-to-Grid enabled
         
-        # Battery parameters - ADD THIS LINE HERE
+        # Battery parameters
         self.battery_soc = 50.0  # Initial battery SoC at 50%
 
         # Grid parameters
@@ -61,27 +63,16 @@ class DataSimulator:
         # Grid power parameters as mentioned by mentor
         self.p_grid = np.sqrt(3)*self.vg_rms * self.ig_rms * self.power_factor  # Active power
         self.q_grid = self.vg_rms * self.ig_rms * np.sin(np.arccos(self.power_factor))  # Reactive power
-        # S_grid = sqrt(P_grid^2 + Q_grid^2) - this is calculated when needed
         
         # Real-time data settings
         self.use_real_data = use_real_data
-        self.udp_client = None
+        
+        # Store reference to the unified UDP handler
+        self.unified_udp = unified_udp
         
         # Parameter update tracking
         self.update_parameter_applied = False
         self.last_updated_parameters = {}  # Store manually updated parameters
-        
-        # Initialize UDP client for real-time data if needed
-        if self.use_real_data:
-            print("Initializing UDP client for real data...")
-            self.udp_client = UDPClient(ip=udp_ip, port=udp_port)
-            success = self.udp_client.start()
-            if not success:
-                print("Failed to start UDP client. Falling back to simulated data.")
-                self.use_real_data = False
-                self.udp_client = None
-            else:
-                print("UDP client started successfully.")
     
     def get_time_data(self, n_points=300):
         """
@@ -120,12 +111,13 @@ class DataSimulator:
         vb_data = np.array([])
         vc_data = np.array([])
         
-        if self.use_real_data and self.udp_client:
-            # Get data from UDP client
-            time_data, va_data, vb_data, vc_data = self.udp_client.get_waveform_data('Grid_Voltage', n_points=None)
+        if self.use_real_data and self.unified_udp:
+            # Get data from unified UDP handler
+            time_data, va_data, vb_data, vc_data = self.unified_udp.get_waveform_data(
+                'Grid_Voltage', time_window=1.5)
             
             # Adjust timestamps to be relative to application start time
-            if len(time_data) > 0:  # This needs to be indented properly!
+            if len(time_data) > 0:
                 # Calculate time offset between UDP client and application
                 time_offset = time.time() - self.time_start - time_data[-1]
                 # Shift all timestamps to match application timeline
@@ -179,7 +171,7 @@ class DataSimulator:
         
         if self.use_real_data and self.udp_client:
             # Get data from UDP client
-            time_data, ia_data, ib_data, ic_data = self.udp_client.get_waveform_data('Grid_Current', n_points=None)
+            time_data, ia_data, ib_data, ic_data = self.unified_udp.get_waveform_data('Grid_Current', time_window=1.5)
             
             # Adjust timestamps to be relative to application start time
             if len(time_data) > 0:  # Properly indented!
@@ -237,7 +229,7 @@ class DataSimulator:
         
         if self.use_real_data and self.udp_client:
             # Get data from UDP client
-            time_data, p_grid, p_pv, p_ev, p_battery = self.udp_client.get_power_data(n_points=None)
+            time_data, p_grid, p_pv, p_ev, p_battery = self.unified_udp.get_power_data(n_points=None)
             
             # Adjust timestamps to be relative to application start time
             if len(time_data) > 0:  # Properly indented!
@@ -297,9 +289,9 @@ class DataSimulator:
         }
         
         # Get data based on mode (real or simulated)
-        if self.use_real_data and self.udp_client and self.udp_client.is_connected():
+        if self.use_real_data and self.unified_udp and self.unified_udp.is_connected():
             # Get latest data from UDP client
-            latest_data = self.udp_client.get_latest_data()
+            latest_data = self.unified_udp.get_latest_data()
             
             # Map UDP data to table data 
             table_data["charging_setting"]["PV power"] = latest_data.get('PhotoVoltaic_Power', 0)
@@ -507,7 +499,7 @@ class DataSimulator:
         }
         
         # If we're in real data mode, some parameters may not be updatable
-        if self.use_real_data:
+        if self.use_real_data and self.unified_udp:
             print(f"Warning: Cannot update {parameter} in real-time data mode")
             return
             

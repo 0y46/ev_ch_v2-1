@@ -17,6 +17,7 @@ from data_simulator import DataSimulator
 from data_logger import DataLogger
 from config_manager import ConfigManager
 from ui_components import GraphWidget, TableWidget, FixedButtonWidget, EnergyHubWidget, GaugeGridWidget
+
 from unified_udp import initialize_unified_udp, get_unified_udp
 
 from network_config import DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT
