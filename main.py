@@ -16,33 +16,31 @@ import argparse
 from data_simulator import DataSimulator
 from data_logger import DataLogger
 from config_manager import ConfigManager
-from ui_components import GraphWidget, GaugeWidget, TableWidget, FixedButtonWidget, EnergyHubWidget, GaugeGridWidget
-from udp_helper import initialize_udp
+from ui_components import GraphWidget, TableWidget, FixedButtonWidget, EnergyHubWidget, GaugeGridWidget
+from unified_udp import initialize_unified_udp, get_unified_udp
 
 from network_config import DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT
 
 class EVChargingMonitor(QMainWindow):
     """Main application window for EV Charging Station Monitor"""
     
-        # In the __init__ method of EVChargingMonitor class, update to use UDP client:
-    def __init__(self, use_real_data=False, udp_ip="0.0.0.0", udp_port=8888):
+    def __init__(self, use_real_data=False, udp_ip="0.0.0.0", udp_port=5000):
         super().__init__()
         
+        # Store communication parameters
+        self.use_real_data = use_real_data
+        self.udp_ip = udp_ip
+        self.udp_port = udp_port
+        
         # Initialize components with real data option
-        # DataSimulator will create a UDPClient that RECEIVES on udp_port (8888)
         self.data_simulator = DataSimulator(use_real_data=use_real_data, 
                                         udp_ip=udp_ip, 
                                         udp_port=udp_port)
         self.data_logger = DataLogger()
         self.config_manager = ConfigManager()
         
-        # Initialize UDP helper for SENDING parameter updates
-        # Use a different port (0 = let OS choose) for the local sending port
-        # But set the target port to udp_port (8888) where the server listens
-
-        initialize_udp(target_ip=udp_ip, target_port=udp_port,local_port=0)
-        print(f"UDP client initialized for sending parameter updates to {udp_ip}:{udp_port}")
-
+        # Initialize communications based on mode
+        self.initialize_communication(use_real_data, udp_ip, udp_port)
 
         # Dictionary to track widgets for layout management
         self.widgets = {}
@@ -53,11 +51,72 @@ class EVChargingMonitor(QMainWindow):
         # Set up update timer (50ms update rate = 20 FPS)
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_data)
-        self.timer.start(300) # Update interval in milliseconds (100ms = 10Hz)
+        self.timer.start(300) # Update interval in milliseconds (300ms)
         
         # Apply fixed positions to all widgets
         self.apply_fixed_positions()
     
+    def initialize_communication(self, use_real_data=False, udp_ip="127.0.0.1", udp_port=8888):
+        """
+        Initialize communication system based on selected mode.
+        
+        Parameters:
+        -----------
+        use_real_data : bool
+            If True, use the unified UDP handler for real hardware communication.
+            If False, use simulated data only.
+        udp_ip : str
+            The IP address of the server to communicate with.
+        udp_port : int
+            The port on the server to communicate with.
+        """
+        if use_real_data:
+            print("Initializing unified UDP handler for real data...")
+            
+            # Initialize the unified UDP handler
+            # Use system-assigned local port (0) to avoid conflicts
+            initialize_unified_udp(server_ip=udp_ip, server_port=udp_port, local_port=0)
+            
+            # Get the UDP handler instance
+            self.unified_udp = get_unified_udp()
+            
+            if not self.unified_udp:
+                print("Failed to initialize unified UDP handler")
+                return False
+            
+            # Define a callback to handle reference value responses
+            def handle_reference_values(values, addr):
+                """
+                Callback function to process reference values received from the server.
+                Updates the UI elements with the new reference values.
+                
+                Parameters:
+                -----------
+                values : list
+                    List of numeric values (Vdc_ref, Pev_ref, Ppv_ref)
+                addr : tuple
+                    Sender's address (ip, port)
+                """
+                print(f"Received reference values from {addr}: {values}")
+                
+                # Update reference values in the UI if they exist
+                if hasattr(self, 'setup_tab') and values:
+                    if len(values) >= 1:
+                        self.setup_tab.vdc_ref_value.setText(f"{values[0]:.1f} V")
+                    if len(values) >= 2:
+                        self.setup_tab.pev_ref_value.setText(f"{values[1]:.1f} W")
+                    if len(values) >= 3:
+                        self.setup_tab.ppv_ref_value.setText(f"{values[2]:.1f} W")
+            
+            # Register the callback
+            self.unified_udp.register_response_callback(handle_reference_values)
+            
+            print("Unified UDP handler initialized for bidirectional communication")
+            return True
+        else:
+            print("Using simulated data")
+            return True
+
     def setupUI(self):
         """Set up the main UI components"""
         # Set window properties
@@ -256,7 +315,34 @@ class EVChargingMonitor(QMainWindow):
         self.widgets["energy_hub"] = self.energy_hub
 
     def update_data(self):
-        """Update all UI components with new data from the simulator"""
+        """Update all UI components with new data from the simulator or real hardware"""
+        
+        # Use real data if available, otherwise use simulator
+        if self.use_real_data and hasattr(self, 'unified_udp') and self.unified_udp:
+            # Check if we're connected
+            if not self.unified_udp.is_connected():
+                # Temporarily fallback to simulator if connection is lost
+                print("Warning: No real data available, using simulated data")
+                self._update_from_simulator()
+                return
+                
+            try:
+                # Try to use real data
+                self._update_from_real_data()
+            except Exception as e:
+                print(f"Error updating from real data: {e}")
+                # Fallback to simulator on error
+                self._update_from_simulator()
+        else:
+            # Use simulator data
+            self._update_from_simulator()
+            
+        # If logging is active, log the data
+        if self.data_logger.is_logging:
+            self.data_logger.log_data(self.data_simulator)
+
+    def _update_from_simulator(self):
+        """Update UI components using simulator data"""
         # Update voltage graph
         time_data, va_data, vb_data, vc_data = self.data_simulator.get_voltage_data()
         self.voltage_graph.update_voltage_data(time_data, va_data, vb_data, vc_data)
@@ -292,10 +378,80 @@ class EVChargingMonitor(QMainWindow):
         self.energy_hub.update_battery_status(hub_data["s4_status"])
         self.energy_hub.update_ev_soc(hub_data["ev_soc"])
         self.energy_hub.update_battery_soc(hub_data["battery_soc"])
+
+    def _update_from_real_data(self):
+        """Update UI components using real data from unified UDP handler"""
+        # Get the latest data from unified UDP handler
+        latest_data = self.unified_udp.get_latest_data()
         
-        # If logging is active, log the data
-        if self.data_logger.is_logging:
-            self.data_logger.log_data(self.data_simulator)
+        # Update voltage graph
+        time_data, va_data, vb_data, vc_data = self.unified_udp.get_waveform_data('Grid_Voltage', time_window=1.5)
+        self.voltage_graph.update_voltage_data(time_data, va_data, vb_data, vc_data)
+        
+        # Update current graph
+        time_data, ia_data, ib_data, ic_data = self.unified_udp.get_waveform_data('Grid_Current', time_window=1.5)
+        self.current_graph.update_current_data(time_data, ia_data, ib_data, ic_data)
+        
+        # Update power graph
+        time_data, p_grid, p_pv, p_ev, p_battery = self.unified_udp.get_power_data(time_window=1.5)
+        self.power_graph.update_power_data(time_data, p_grid, p_pv, p_ev, p_battery)
+        
+        # UPDATE TABLES - THIS IS THE NEW PART
+        # Create table data structures from latest_data
+        table_data = {
+            "grid_settings": {
+                "Vg_rms": latest_data.get('Grid_Voltage', 0),
+                "Ig_rms": latest_data.get('Grid_Current', 0),
+                "Frequency": latest_data.get('Frequency', 50.0),
+                "THD": latest_data.get('THD', 0),
+                "Power factor": latest_data.get('Power_Factor', 0.95)
+            },
+            "charging_setting": {
+                "PV power": latest_data.get('PhotoVoltaic_Power', 0),
+                "EV power": latest_data.get('ElectricVehicle_Power', 0),
+                "Battery power": latest_data.get('Battery_Power', 0),
+                "Grid power": latest_data.get('Grid_Power', 0),
+                "Grid reactive power": latest_data.get('Grid_Reactive_Power', 0),
+                "V_dc": latest_data.get('DCLink_Voltage', 0)
+            },
+            "ev_charging_setting": {
+                "EV voltage": latest_data.get('ElectricVehicle_Voltage', 0),
+                "EV current": latest_data.get('ElectricVehicle_Current', 0),
+                "EV SoC": latest_data.get('EV_SoC', 0),
+                "EV_Charging": latest_data.get('ElectricVehicle_Power', 0) < 0  # Boolean: true if charging
+            }
+        }
+        
+        # Update the tables with the real data values
+        self.charging_setting_table.update_values(table_data["charging_setting"])
+        self.ev_charging_table.update_values(table_data["ev_charging_setting"])
+        self.grid_settings_table.update_values(table_data["grid_settings"])
+        
+        # Update gauges with the latest values
+        self.gauges[0].set_value(latest_data.get('Frequency', 50.0))
+        self.gauges[1].set_value(latest_data.get('Grid_Voltage', 0))
+        self.gauges[2].set_value(latest_data.get('THD', 0))
+        self.gauges[3].set_value(latest_data.get('Grid_Power', 0))
+        self.gauges[4].set_value(latest_data.get('Grid_Reactive_Power', 0))
+        self.gauges[5].set_value(latest_data.get('Grid_Current', 0))
+        
+        # Update Smart Energy Hub
+        self.energy_hub.update_pv_status(latest_data.get('S1_Status', 0))
+        self.energy_hub.update_ev_status(latest_data.get('S2_Status', 0))
+        self.energy_hub.update_grid_status(latest_data.get('S3_Status', 0))
+        self.energy_hub.update_battery_status(latest_data.get('S4_Status', 0))
+        self.energy_hub.update_ev_soc(latest_data.get('EV_SoC', 0))
+        self.energy_hub.update_battery_soc(latest_data.get('Battery_SoC', 0))
+        
+        # Get reference values if available
+        ref_values = self.unified_udp.get_reference_values()
+        if ref_values and hasattr(self, 'setup_tab'):
+            if ref_values["Vdc_ref"] is not None:
+                self.setup_tab.vdc_ref_value.setText(f"{ref_values['Vdc_ref']:.1f} V")
+            if ref_values["Pev_ref"] is not None:
+                self.setup_tab.pev_ref_value.setText(f"{ref_values['Pev_ref']:.1f} W")
+            if ref_values["Ppv_ref"] is not None:
+                self.setup_tab.ppv_ref_value.setText(f"{ref_values['Ppv_ref']:.1f} W")
     
     def on_table_save(self, table_type, input_values):
         """Handle save button click from tables"""
@@ -303,13 +459,17 @@ class EVChargingMonitor(QMainWindow):
         
         # Update simulator with new values
         for param_name, value in input_values.items():
-            # Map param_name to simulator attribute name (lowercase with underscores)
+            # Map param_name to simulator attribute name
             attr_name = param_name.lower().replace(" ", "_")
             self.data_simulator.update_parameters(attr_name, value)
             
             # Force refresh of the tables in the next update cycle
-            # This ensures the new values are displayed
             self.data_simulator.update_parameter_applied = True
+        
+        # Send parameter updates via unified UDP handler if in real data mode
+        if self.use_real_data and hasattr(self, 'unified_udp') and self.unified_udp:
+            print(f"Sending {table_type} updates via UDP: {input_values}")
+            self.unified_udp.send_parameter_update(table_type, input_values)
     
     def start_logging(self):
         """Start data logging"""
@@ -370,7 +530,7 @@ class EVChargingMonitor(QMainWindow):
         print("Starting application shutdown sequence...")
         
         # Stop logging if active
-        if hasattr(self, 'data_logger') and self.data_logger.is_logging:
+        if self.data_logger.is_logging:
             print("Stopping data logger...")
             self.data_logger.stop_logging()
         
@@ -384,16 +544,13 @@ class EVChargingMonitor(QMainWindow):
         time.sleep(0.2)
         
         # Clean shutdown of data simulator
-        if hasattr(self, 'data_simulator'):
-            print("Shutting down data simulator...")
-            self.data_simulator.shutdown()
+        print("Shutting down data simulator...")
+        self.data_simulator.shutdown()
         
-        # Explicitly close and clean up UDP helper
-        from udp_helper import get_udp_client
-        udp_client = get_udp_client()
-        if udp_client:
-            print("Shutting down UDP helper...")
-            udp_client.close()
+        # Clean up unified UDP handler if it exists
+        if hasattr(self, 'unified_udp') and self.unified_udp:
+            print("Shutting down unified UDP handler...")
+            self.unified_udp.close()
         
         print("Shutdown complete.")
         event.accept()
