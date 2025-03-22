@@ -114,7 +114,7 @@ class DataSimulator:
         if self.use_real_data and self.unified_udp:
             # Get data from unified UDP handler
             time_data, va_data, vb_data, vc_data = self.unified_udp.get_waveform_data(
-                'Grid_Voltage', time_window=1.5)
+                'Grid_Voltage', time_window=1)
             
             # Adjust timestamps to be relative to application start time
             if len(time_data) > 0:
@@ -169,9 +169,9 @@ class DataSimulator:
         ib_data = np.array([])
         ic_data = np.array([])
         
-        if self.use_real_data and self.udp_client:
+        if self.use_real_data and self.unified_udp:
             # Get data from UDP client
-            time_data, ia_data, ib_data, ic_data = self.unified_udp.get_waveform_data('Grid_Current', time_window=1.5)
+            time_data, ia_data, ib_data, ic_data = self.unified_udp.get_waveform_data('Grid_Current', time_window=1)
             
             # Adjust timestamps to be relative to application start time
             if len(time_data) > 0:  # Properly indented!
@@ -227,9 +227,9 @@ class DataSimulator:
         p_ev = np.array([])
         p_battery = np.array([])
         
-        if self.use_real_data and self.udp_client:
+        if self.use_real_data and self.unified_udp:
             # Get data from UDP client
-            time_data, p_grid, p_pv, p_ev, p_battery = self.unified_udp.get_power_data(n_points=None)
+            time_data, p_grid, p_pv, p_ev, p_battery = self.unified_udp.get_power_data(time_window=1)
             
             # Adjust timestamps to be relative to application start time
             if len(time_data) > 0:  # Properly indented!
@@ -404,9 +404,9 @@ class DataSimulator:
         dict
             Dictionary containing data for all gauges.
         """
-        if self.use_real_data and self.udp_client and self.udp_client.is_connected():
+        if self.use_real_data and self.unified_udp and self.unified_udp.is_connected():
             # Get latest data from UDP client
-            latest_data = self.udp_client.get_latest_data()
+            latest_data = self.unified_udp.get_latest_data()
             
             # Using mentor's formula: S_grid = sqrt(P_grid^2 + Q_grid^2)
             # P_grid and Q_grid are directly provided in the UDP data
@@ -447,9 +447,9 @@ class DataSimulator:
         dict
             Dictionary containing hub component status values.
         """
-        if self.use_real_data and self.udp_client and self.udp_client.is_connected():
+        if self.use_real_data and self.unified_udp and self.unified_udp.is_connected():
             # Get real data from UDP client
-            latest_data = self.udp_client.get_latest_data()
+            latest_data = self.unified_udp.get_latest_data()
             
             return {
                 "s1_status": latest_data.get('S1_Status', 0),
@@ -546,6 +546,5 @@ class DataSimulator:
         """
         Perform any cleanup needed when the application is closing.
         """
-        if self.use_real_data and self.udp_client:
-            print("Shutting down UDP client...")
-            self.udp_client.stop()
+        # No need to shut down the UDP client as it's managed by the main application
+        pass

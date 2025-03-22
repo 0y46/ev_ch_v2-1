@@ -10,7 +10,6 @@ import pyqtgraph as pg
 import numpy as np
 from PyQt5.QtGui import QColor, QPainter, QPen, QBrush, QFont, QMovie, QPixmap
 from keypad import NumericKeypad
-from udp_helper import get_udp_client  
 
 class FixedWidget(QFrame):
     """
@@ -933,16 +932,6 @@ class TableWidget(FixedWidget):  # Assuming you changed from DraggableWidget to 
             
             # Update values in the table immediately
             self.update_from_input_values(input_values)
-            
-            # Send data via UDP if values were collected
-            if input_values:
-                # Get UDP client and send packet
-                udp_client = get_udp_client()
-                if udp_client:
-                    udp_client.send_parameter_update(self.table_type, input_values)
-                    print(f"Sent UDP update for {self.table_type}: {input_values}")
-                else:
-                    print("UDP client not initialized, can't send packet")
             
             # Emit signal with table type and values
             self.save_clicked.emit(self.table_type, input_values)

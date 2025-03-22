@@ -536,7 +536,7 @@ class UnifiedUDPHandler:
             
         return self.last_responses.get(address)
     
-    def filter_by_time_window(self, time_data, *data_series, time_window=None):
+    def filter_by_time_window(self, time_data, *data_series, time_window=1):
         """
         Filter data to only include points within the specified time window from the most recent point.
         Enhanced with race condition protection.
@@ -600,7 +600,7 @@ class UnifiedUDPHandler:
             # Return the original data if filtering fails
             return (time_data,) + data_series
 
-    def get_waveform_data(self, waveform_type, n_points=None, time_window=None):
+    def get_waveform_data(self, waveform_type, n_points=None, time_window=1):
         """
         Get waveform data for voltage or current.
         
@@ -652,7 +652,7 @@ class UnifiedUDPHandler:
         
         return time_data, phase_a, phase_b, phase_c
 
-    def get_power_data(self, n_points=None, time_window=None):
+    def get_power_data(self, n_points=None, time_window=1):
         """
         Get power data for grid, PV, EV, and battery.
         
@@ -701,7 +701,7 @@ class UnifiedUDPHandler:
         
         return time_data, grid_power, pv_power, ev_power, battery_power
 
-    def get_parameter_history(self, parameter, n_points=None, time_window=None):
+    def get_parameter_history(self, parameter, n_points=None, time_window=1):
         """
         Get historical data for a specific parameter.
         

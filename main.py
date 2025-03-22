@@ -33,10 +33,14 @@ class EVChargingMonitor(QMainWindow):
         self.udp_ip = udp_ip
         self.udp_port = udp_port
         
-        # Initialize components with real data option
-        self.data_simulator = DataSimulator(use_real_data=use_real_data, 
-                                        udp_ip=udp_ip, 
-                                        udp_port=udp_port)
+        # THEN initialize components with real data option AND the unified UDP handler
+        self.data_simulator = DataSimulator(
+            use_real_data=use_real_data, 
+            udp_ip=udp_ip, 
+            udp_port=udp_port,
+            unified_udp=self.unified_udp if use_real_data and hasattr(self, 'unified_udp') else None
+        )
+
         self.data_logger = DataLogger()
         self.config_manager = ConfigManager()
         
@@ -386,15 +390,15 @@ class EVChargingMonitor(QMainWindow):
         latest_data = self.unified_udp.get_latest_data()
         
         # Update voltage graph
-        time_data, va_data, vb_data, vc_data = self.unified_udp.get_waveform_data('Grid_Voltage', time_window=1.5)
+        time_data, va_data, vb_data, vc_data = self.unified_udp.get_waveform_data('Grid_Voltage', time_window=1)
         self.voltage_graph.update_voltage_data(time_data, va_data, vb_data, vc_data)
         
         # Update current graph
-        time_data, ia_data, ib_data, ic_data = self.unified_udp.get_waveform_data('Grid_Current', time_window=1.5)
+        time_data, ia_data, ib_data, ic_data = self.unified_udp.get_waveform_data('Grid_Current', time_window=1)
         self.current_graph.update_current_data(time_data, ia_data, ib_data, ic_data)
         
         # Update power graph
-        time_data, p_grid, p_pv, p_ev, p_battery = self.unified_udp.get_power_data(time_window=1.5)
+        time_data, p_grid, p_pv, p_ev, p_battery = self.unified_udp.get_power_data(time_window=1)
         self.power_graph.update_power_data(time_data, p_grid, p_pv, p_ev, p_battery)
         
         # UPDATE TABLES - THIS IS THE NEW PART
