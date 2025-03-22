@@ -10,13 +10,23 @@ import time
 import numpy as np
 from collections import deque
 
+from network_config import (
+    DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT, DEFAULT_CLIENT_PORT, DEFAULT_BROADCAST_IP,
+    DEFAULT_BUFFER_SIZE, DEFAULT_SOCKET_TIMEOUT, DEFAULT_HELLO_INTERVAL,
+    DEFAULT_HISTORY_LENGTH, HELLO_MESSAGE, PARAM_PREFIX,
+    TABLE_ID_GRID, TABLE_ID_CHARGING, TABLE_ID_EV,
+    DEFAULT_TIME_WINDOW
+)
+
 class UnifiedUDPHandler:
     """
     Combined UDP handler that uses a single port for both sending and receiving,
     matching the mentor's Node.js server approach.
     """
     
-    def __init__(self, server_ip="127.0.0.1", server_port=8888, local_port=0, buffer_size=1024, history_length=1000):
+    def __init__(self, server_ip=DEFAULT_SERVER_IP, server_port=DEFAULT_SERVER_PORT, 
+                local_port=DEFAULT_CLIENT_PORT, buffer_size=DEFAULT_BUFFER_SIZE, 
+                history_length=DEFAULT_HISTORY_LENGTH):        
         """
         Initialize the unified UDP handler.
         
@@ -49,9 +59,9 @@ class UnifiedUDPHandler:
         
         # Table IDs for parameter updates (same as in udp_helper.py)
         self.table_ids = {
-            "grid_settings": 1,
-            "charging_setting": 2,
-            "ev_charging_setting": 3
+            "grid_settings": TABLE_ID_GRID,
+            "charging_setting": TABLE_ID_CHARGING,
+            "ev_charging_setting": TABLE_ID_EV
         }
         
         # Last received reference values
@@ -156,10 +166,10 @@ class UnifiedUDPHandler:
             
             # Set socket options
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.socket.settimeout(0.5)  # 500ms timeout
+            self.socket.settimeout(DEFAULT_SOCKET_TIMEOUT)  # 500ms timeout
             
             # Bind the socket to the local port
-            self.socket.bind(("0.0.0.0", self.local_port))
+            self.socket.bind((DEFAULT_BROADCAST_IP, self.local_port))
             
             # Get the actual port assigned by the system
             _, self.local_port = self.socket.getsockname()
@@ -194,8 +204,7 @@ class UnifiedUDPHandler:
         """Send a hello packet to the server to establish communication."""
         try:
             if self.socket:
-                hello_message = "HELLO"
-                self.socket.sendto(hello_message.encode('utf-8'), (self.server_ip, self.server_port))
+                self.socket.sendto(HELLO_MESSAGE.encode('utf-8'), (self.server_ip, self.server_port))
                 print(f"Sent hello packet to server at {self.server_ip}:{self.server_port}")
         except Exception as e:
             print(f"Failed to send hello packet: {e}")
@@ -209,7 +218,7 @@ class UnifiedUDPHandler:
         start_time = time.time()
         packet_count = 0
         last_hello_time = time.time()
-        hello_interval = 10.0  # Send hello every 10 seconds if no data
+        hello_interval = DEFAULT_HELLO_INTERVAL # Send hello every 10 seconds if no data
         
         while self.is_running and self.socket:
             try:
@@ -452,7 +461,7 @@ class UnifiedUDPHandler:
                 return False
             
             # Start building the CSV string with command and table ID
-            csv_parts = ["PARAM", str(table_id)]
+            csv_parts = [PARAM_PREFIX, str(table_id)]
             
             # Add each parameter and value
             for param_name, value in params.items():
@@ -600,7 +609,7 @@ class UnifiedUDPHandler:
             # Return the original data if filtering fails
             return (time_data,) + data_series
 
-    def get_waveform_data(self, waveform_type, n_points=None, time_window=1):
+    def get_waveform_data(self, waveform_type, n_points=None, time_window=DEFAULT_TIME_WINDOW):
         """
         Get waveform data for voltage or current.
         
@@ -652,7 +661,7 @@ class UnifiedUDPHandler:
         
         return time_data, phase_a, phase_b, phase_c
 
-    def get_power_data(self, n_points=None, time_window=1):
+    def get_power_data(self, n_points=None, time_window=DEFAULT_TIME_WINDOW):
         """
         Get power data for grid, PV, EV, and battery.
         
@@ -701,7 +710,7 @@ class UnifiedUDPHandler:
         
         return time_data, grid_power, pv_power, ev_power, battery_power
 
-    def get_parameter_history(self, parameter, n_points=None, time_window=1):
+    def get_parameter_history(self, parameter, n_points=None, time_window=DEFAULT_TIME_WINDOW):
         """
         Get historical data for a specific parameter.
         
@@ -828,7 +837,7 @@ class UnifiedUDPHandler:
 # Global singleton instance for application-wide use
 unified_udp = None
 
-def initialize_unified_udp(server_ip="127.0.0.1", server_port=8888, local_port=0):
+def initialize_unified_udp(server_ip=DEFAULT_SERVER_IP, server_port=DEFAULT_SERVER_PORT, local_port=DEFAULT_CLIENT_PORT):
     """
     Initialize the global unified UDP handler.
     

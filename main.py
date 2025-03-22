@@ -20,12 +20,14 @@ from ui_components import GraphWidget, TableWidget, FixedButtonWidget, EnergyHub
 
 from unified_udp import initialize_unified_udp, get_unified_udp
 
-from network_config import DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT
+from network_config import (
+    DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT, DEFAULT_CLIENT_PORT, DEFAULT_TIME_WINDOW, DEFAULT_UI_UPDATE_INTERVAL
+)
 
 class EVChargingMonitor(QMainWindow):
     """Main application window for EV Charging Station Monitor"""
     
-    def __init__(self, use_real_data=False, udp_ip="0.0.0.0", udp_port=5000):
+    def __init__(self, use_real_data=False, udp_ip=DEFAULT_SERVER_IP, udp_port=DEFAULT_SERVER_PORT):
         super().__init__()
         
         # Store communication parameters
@@ -56,12 +58,12 @@ class EVChargingMonitor(QMainWindow):
         # Set up update timer (50ms update rate = 20 FPS)
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_data)
-        self.timer.start(300) # Update interval in milliseconds (300ms)
+        self.timer.start(DEFAULT_UI_UPDATE_INTERVAL) # Update interval in milliseconds (100ms)
         
         # Apply fixed positions to all widgets
         self.apply_fixed_positions()
     
-    def initialize_communication(self, use_real_data=False, udp_ip="127.0.0.1", udp_port=8888):
+    def initialize_communication(self, use_real_data=False, udp_ip=DEFAULT_SERVER_IP, udp_port=DEFAULT_SERVER_PORT):
         """
         Initialize communication system based on selected mode.
         
@@ -80,7 +82,7 @@ class EVChargingMonitor(QMainWindow):
             
             # Initialize the unified UDP handler
             # Use system-assigned local port (0) to avoid conflicts
-            initialize_unified_udp(server_ip=udp_ip, server_port=udp_port, local_port=0)
+            initialize_unified_udp(server_ip=udp_ip, server_port=udp_port, local_port=DEFAULT_CLIENT_PORT)
             
             # Get the UDP handler instance
             self.unified_udp = get_unified_udp()
@@ -390,15 +392,15 @@ class EVChargingMonitor(QMainWindow):
         latest_data = self.unified_udp.get_latest_data()
         
         # Update voltage graph
-        time_data, va_data, vb_data, vc_data = self.unified_udp.get_waveform_data('Grid_Voltage', time_window=1)
+        time_data, va_data, vb_data, vc_data = self.unified_udp.get_waveform_data('Grid_Voltage', time_window=DEFAULT_TIME_WINDOW)
         self.voltage_graph.update_voltage_data(time_data, va_data, vb_data, vc_data)
         
         # Update current graph
-        time_data, ia_data, ib_data, ic_data = self.unified_udp.get_waveform_data('Grid_Current', time_window=1)
+        time_data, ia_data, ib_data, ic_data = self.unified_udp.get_waveform_data('Grid_Current', time_window=DEFAULT_TIME_WINDOW)
         self.current_graph.update_current_data(time_data, ia_data, ib_data, ic_data)
         
         # Update power graph
-        time_data, p_grid, p_pv, p_ev, p_battery = self.unified_udp.get_power_data(time_window=1)
+        time_data, p_grid, p_pv, p_ev, p_battery = self.unified_udp.get_power_data(time_window=DEFAULT_TIME_WINDOW)
         self.power_graph.update_power_data(time_data, p_grid, p_pv, p_ev, p_battery)
         
         # UPDATE TABLES - THIS IS THE NEW PART
