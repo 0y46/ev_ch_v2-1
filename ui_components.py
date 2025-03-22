@@ -582,7 +582,7 @@ class TableWidget(FixedWidget):  # Assuming you changed from DraggableWidget to 
         self.save_button.setStyleSheet("""
             QPushButton {
                 background-color: #4CAF50;
-                color: red;
+                color: white;
                 font-weight: bold;
                 padding: 0px 10px;
             }

@@ -570,6 +570,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     app = QApplication(sys.argv)
+    app.setStyle("Fusion")
     window = EVChargingMonitor(use_real_data=args.real_data, 
                               udp_ip=args.udp_ip, 
                               udp_port=args.udp_port)
