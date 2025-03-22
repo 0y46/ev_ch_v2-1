@@ -13,13 +13,18 @@ import random
 import argparse
 import threading
 
+from network_config import (
+    DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT, 
+    PARAM_PREFIX, HELLO_MESSAGE
+)
+
 class EVChargingTestServer:
     """
     Test server that simulates both the EV charging hardware (sending data)
     and the mentor's server (receiving parameter updates and responding).
     """
     
-    def __init__(self, ip='127.0.0.1', port=8888, interval=0.1):
+    def __init__(self, ip=DEFAULT_SERVER_IP, port=DEFAULT_SERVER_PORT, interval=0.1):
         """
         Initialize the test server.
         
@@ -196,6 +201,11 @@ class EVChargingTestServer:
                     # Process the received data
                     message = data.decode('utf-8').strip()
                     client_id = f"{addr[0]}:{addr[1]}"  # Create unique client identifier
+
+                    # Check if this is a loopback message from ourselves
+                    if addr[1] == self.port and addr[0] in ('127.0.0.1', self.ip):
+                        # Skip processing our own messages
+                        continue
                     
                     # Add this client to tracked addresses if new
                     if client_id not in self.client_addresses:
@@ -233,7 +243,7 @@ class EVChargingTestServer:
         """
         # Parse the message
         parts = message.split(',')
-        if len(parts) < 3 or parts[0] != "PARAM":
+        if len(parts) < 3 or parts[0] != PARAM_PREFIX:
             print(f"Invalid parameter message format: {message}")
             return
         

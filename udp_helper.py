@@ -9,6 +9,11 @@ import socket
 import threading
 import time
 
+from network_config import (
+    DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT, DEFAULT_CLIENT_PORT,
+    PARAM_PREFIX, HELLO_MESSAGE, TABLE_ID_GRID, TABLE_ID_CHARGING, TABLE_ID_EV
+)
+
 class EVChargerUDP:
     """
     Helper class to manage bidirectional UDP communication for the EV Charger application.
@@ -17,7 +22,7 @@ class EVChargerUDP:
     using a simple CSV format and can receive responses on the same port.
     """
     
-    def __init__(self, target_ip="127.0.0.1", target_port=8888, local_port=0):
+    def __init__(self, target_ip=DEFAULT_SERVER_IP, target_port=DEFAULT_SERVER_PORT, local_port=DEFAULT_CLIENT_PORT):
         """
         Initialize bidirectional UDP communication.
         
@@ -35,9 +40,9 @@ class EVChargerUDP:
         
         # Table IDs for different table types
         self.table_ids = {
-            "grid_settings": 1,
-            "charging_setting": 2,
-            "ev_charging_setting": 3
+            "grid_settings": TABLE_ID_GRID,
+            "charging_setting": TABLE_ID_CHARGING,
+            "ev_charging_setting": TABLE_ID_EV
         }
         
         # Dictionary to store the last response received from each remote address
@@ -91,8 +96,8 @@ class EVChargerUDP:
         """Send a hello packet to the server to establish communication."""
         try:
             if self.socket:
-                hello_message = "HELLO"
-                self.socket.sendto(hello_message.encode('utf-8'), self.target_address)
+                # Use the standard hello message
+                self.socket.sendto(HELLO_MESSAGE.encode('utf-8'), self.target_address)
                 print(f"Sent hello packet to server at {self.target_address[0]}:{self.target_address[1]}")
         except Exception as e:
             print(f"Failed to send hello packet: {e}")
@@ -115,7 +120,7 @@ class EVChargerUDP:
         Background thread method to continuously receive and process UDP responses.
         Similar to your mentor's 'message' event handler.
         """
-        reconnect_interval = 5.0  # Try to reconnect every 5 seconds if no data
+        reconnect_interval = 10.0  # Try to reconnect every 5 seconds if no data
         last_reconnect = time.time()
         
         while self.is_running and self.socket:
@@ -147,12 +152,20 @@ class EVChargerUDP:
                             # Try to parse as numeric values
                             parsed_values = [float(val) for val in values]
                             
-                            # This looks like a parameter response
+                            # Create named reference dictionary if it matches the expected format
+                            if len(parsed_values) >= 3:
+                                ref_dict = {
+                                    "Vdc_ref": parsed_values[0],
+                                    "Pev_ref": parsed_values[1],
+                                    "Ppv_ref": parsed_values[2]
+                                }
+                                print(f"Received reference values: {ref_dict}")
+                                
+                            # Call callback with the parsed values
                             if self.response_callback:
-                                # Call the user-provided callback with the parsed values
                                 self.response_callback(parsed_values, addr)
                     except ValueError:
-                        # Not numeric values, probably not a parameter response
+                        # Not numeric values
                         print(f"Received non-parameter message: {message}")
                     
             except socket.timeout:
@@ -194,7 +207,7 @@ class EVChargerUDP:
                 return False
             
             # Start building the CSV string with command and table ID
-            csv_parts = ["PARAM", str(table_id)]
+            csv_parts = [PARAM_PREFIX, str(table_id)]
             
             # Add each parameter and value
             for param_name, value in params.items():
@@ -271,7 +284,7 @@ class EVChargerUDP:
 # Global singleton instance for application-wide use
 udp_client = None
 
-def initialize_udp(target_ip="127.0.0.1", target_port=8888, local_port=0):
+def initialize_udp(target_ip=DEFAULT_SERVER_IP, target_port=DEFAULT_SERVER_PORT, local_port=DEFAULT_CLIENT_PORT):
     """
     Initialize the global UDP client for bidirectional communication.
     

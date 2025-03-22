@@ -9,6 +9,12 @@ import time
 import numpy as np
 from collections import deque
 
+from network_config import (
+    DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT, DEFAULT_CLIENT_PORT, 
+    DEFAULT_BUFFER_SIZE, HELLO_MESSAGE
+)
+
+
 class UDPClient:
     """
     A UDP client that receives and parses data from the EV Charging Station hardware.
@@ -17,16 +23,18 @@ class UDPClient:
     Vd,Id,Vdc,Vev,Vpv,Iev,Ipv,Ppv,Pev,Pbattery,Pg,Qg,PF,Fg,THD,s1,s2,s3,s4,SoC_battery,SoC_EV
     """
     
-    def __init__(self, ip="127.0.0.1", port=8888, listen_port=0, buffer_size=1024, history_length=1000):
+    def __init__(self, ip=DEFAULT_SERVER_IP, port=DEFAULT_SERVER_PORT, listen_port=DEFAULT_CLIENT_PORT, buffer_size=DEFAULT_BUFFER_SIZE, history_length=1000):
         """
         Initialize the UDP client.
         
         Parameters:
         -----------
         ip : str
-            The server IP address to communicate with. Default is '127.0.0.1' for localhost.
+            The server IP address to communicate with. Default from network_config.
         port : int
-            The server port to communicate with. Default is 8888 to match mentor's code.
+            The server port to communicate with. Default from network_config.
+        listen_port : int
+            Local port to listen on. Default is 0 (OS assigns available port).
         buffer_size : int
             Size of the receive buffer in bytes.
         history_length : int
@@ -40,6 +48,10 @@ class UDPClient:
         self.listen_port = 0          # 0 means the OS will assign an available port
         self.client_port = None       # Will be assigned when socket is bound
         
+        # Add data access locks for thread safety
+        self.data_lock = threading.Lock()  # Main lock for all data structures
+        self.time_lock = threading.Lock()  # Separate lock for time-related operations
+
         self.buffer_size = buffer_size
         self.history_length = history_length
         
@@ -158,22 +170,26 @@ class UDPClient:
             return False
     
     def stop(self):
-        """
-        Stop the UDP client and clean up resources.
-        """
+        """Stop the UDP client and clean up resources."""
+        print("Stopping UDP client...")
+        # Signal the thread to stop
         self.is_running = False
         
         if self.receive_thread and self.receive_thread.is_alive():
+            print("Waiting for receive thread to terminate...")
             self.receive_thread.join(timeout=2.0)
+            if self.receive_thread.is_alive():
+                print("Warning: Receive thread did not terminate cleanly")
         
         if self.socket:
             try:
+                print("Closing UDP socket...")
                 self.socket.close()
-            except:
-                pass
+            except Exception as e:
+                print(f"Error closing socket: {e}")
             self.socket = None
             
-        print("UDP client stopped")
+        print("UDP client stopped successfully")
     
     def _receive_data(self):
         """
@@ -209,9 +225,18 @@ class UDPClient:
                     self._send_hello_packet()
                     start_time = time.time()  # Reset timer to avoid spamming
                 pass
+
             except Exception as e:
                 print(f"Error receiving data: {e}")
-                time.sleep(0.1)  # Prevent tight loop if there's a persistent error
+                error_count += 1
+                
+                # Try to reconnect after several consecutive errors
+                if error_count > 5:
+                    print("Too many consecutive errors, attempting reconnection")
+                    self.reconnect()
+                    error_count = 0
+                
+                time.sleep(0.1)
     
     def _send_hello_packet(self):
         """
@@ -219,9 +244,8 @@ class UDPClient:
         This helps the server know our address and port for responses.
         """
         try:
-            # Simple hello message to establish communication
-            hello_message = "HELLO"
-            self.socket.sendto(hello_message.encode('utf-8'), (self.server_ip, self.server_port))
+            # Use the standard hello message from network_config
+            self.socket.sendto(HELLO_MESSAGE.encode('utf-8'), (self.server_ip, self.server_port))
             print(f"Sent hello packet to {self.server_ip}:{self.server_port}")
         except Exception as e:
             print(f"Error sending hello packet: {e}")
@@ -269,7 +293,8 @@ class UDPClient:
                 return  # RETURN WITHOUT ADDING TIMESTAMP
             
             # Now we know this is valid data - ADD TIMESTAMP TO HISTORY
-            self.time_history.append(timestamp)
+            with self.time_lock:  # Use the time lock for time history
+                self.time_history.append(timestamp)
             
             # Parse the values into floats
             try:
@@ -312,49 +337,51 @@ class UDPClient:
                 print(f"Raw data: {data_str}")
                 return
                 
-            # Update latest data with all parameters
-            self.latest_data['Grid_Voltage'] = vd
-            self.latest_data['Grid_Current'] = id_val
-            self.latest_data['DCLink_Voltage'] = vdc
-            self.latest_data['ElectricVehicle_Voltage'] = vev
-            self.latest_data['PhotoVoltaic_Voltage'] = vpv
-            self.latest_data['ElectricVehicle_Current'] = iev
-            self.latest_data['PhotoVoltaic_Current'] = ipv
-            self.latest_data['PhotoVoltaic_Power'] = ppv
-            self.latest_data['ElectricVehicle_Power'] = pev
-            self.latest_data['Battery_Power'] = pbattery
-            self.latest_data['Grid_Power'] = pgrid
-            self.latest_data['Grid_Reactive_Power'] = qgrid
-            self.latest_data['Power_Factor'] = power_factor
-            self.latest_data['Frequency'] = frequency
-            self.latest_data['THD'] = thd
-            self.latest_data['S1_Status'] = s1
-            self.latest_data['S2_Status'] = s2
-            self.latest_data['S3_Status'] = s3
-            self.latest_data['S4_Status'] = s4
-            self.latest_data['Battery_SoC'] = soc_battery
-            self.latest_data['EV_SoC'] = soc_ev
-                
-            # Update data history
-            self.data_history['Grid_Voltage'].append(vd)
-            self.data_history['Grid_Current'].append(id_val)
-            self.data_history['DCLink_Voltage'].append(vdc)
-            self.data_history['ElectricVehicle_Voltage'].append(vev)
-            self.data_history['PhotoVoltaic_Voltage'].append(vpv)
-            self.data_history['ElectricVehicle_Current'].append(iev)
-            self.data_history['PhotoVoltaic_Current'].append(ipv)
-            self.data_history['PhotoVoltaic_Power'].append(ppv)
-            self.data_history['ElectricVehicle_Power'].append(pev)
-            self.data_history['Battery_Power'].append(pbattery)
-            self.data_history['Grid_Power'].append(pgrid)
+            # Use the data lock to protect all data updates
+            with self.data_lock:
+                # Update latest data with all parameters
+                self.latest_data['Grid_Voltage'] = vd
+                self.latest_data['Grid_Current'] = id_val
+                self.latest_data['DCLink_Voltage'] = vdc
+                self.latest_data['ElectricVehicle_Voltage'] = vev
+                self.latest_data['PhotoVoltaic_Voltage'] = vpv
+                self.latest_data['ElectricVehicle_Current'] = iev
+                self.latest_data['PhotoVoltaic_Current'] = ipv
+                self.latest_data['PhotoVoltaic_Power'] = ppv
+                self.latest_data['ElectricVehicle_Power'] = pev
+                self.latest_data['Battery_Power'] = pbattery
+                self.latest_data['Grid_Power'] = pgrid
+                self.latest_data['Grid_Reactive_Power'] = qgrid
+                self.latest_data['Power_Factor'] = power_factor
+                self.latest_data['Frequency'] = frequency
+                self.latest_data['THD'] = thd
+                self.latest_data['S1_Status'] = s1
+                self.latest_data['S2_Status'] = s2
+                self.latest_data['S3_Status'] = s3
+                self.latest_data['S4_Status'] = s4
+                self.latest_data['Battery_SoC'] = soc_battery
+                self.latest_data['EV_SoC'] = soc_ev
+                    
+                # Update data history
+                self.data_history['Grid_Voltage'].append(vd)
+                self.data_history['Grid_Current'].append(id_val)
+                self.data_history['DCLink_Voltage'].append(vdc)
+                self.data_history['ElectricVehicle_Voltage'].append(vev)
+                self.data_history['PhotoVoltaic_Voltage'].append(vpv)
+                self.data_history['ElectricVehicle_Current'].append(iev)
+                self.data_history['PhotoVoltaic_Current'].append(ipv)
+                self.data_history['PhotoVoltaic_Power'].append(ppv)
+                self.data_history['ElectricVehicle_Power'].append(pev)
+                self.data_history['Battery_Power'].append(pbattery)
+                self.data_history['Grid_Power'].append(pgrid)
 
-            # ADD THESE NEW HISTORY UPDATES:
-            self.data_history['Grid_Reactive_Power'].append(qgrid)
-            self.data_history['Power_Factor'].append(power_factor)
-            self.data_history['Frequency'].append(frequency)
-            self.data_history['THD'].append(thd)
-            self.data_history['Battery_SoC'].append(soc_battery)
-            self.data_history['EV_SoC'].append(soc_ev)
+                # ADD THESE NEW HISTORY UPDATES:
+                self.data_history['Grid_Reactive_Power'].append(qgrid)
+                self.data_history['Power_Factor'].append(power_factor)
+                self.data_history['Frequency'].append(frequency)
+                self.data_history['THD'].append(thd)
+                self.data_history['Battery_SoC'].append(soc_battery)
+                self.data_history['EV_SoC'].append(soc_ev)
             
             # Generate three-phase waveforms
             self._generate_waveforms(vd, id_val, timestamp)
@@ -378,15 +405,18 @@ class UDPClient:
         timestamp : float
             The current time value.
         """
+        with self.data_lock:
+            frequency = self.latest_data.get('Frequency', self.frequency)
+            power_factor = self.latest_data.get('Power_Factor', 0.95)
+        
         # Calculate the sine wave position based on time
         # Note: The frequency is assumed to be 50Hz
-        # Scale the amplitude by sqrt(2) to convert from RMS to peak if needed
         # (depending on how the values are provided by the hardware)
         voltage_peak = voltage_amplitude * np.sqrt(2)  # Convert RMS to peak if needed
         current_peak = current_amplitude * np.sqrt(2)  # Convert RMS to peak if needed
         
         # Generate time-based angle for the sine waves
-        angle = 2 * np.pi * self.latest_data.get('Frequency', self.frequency) * timestamp
+        angle = 2 * np.pi * frequency * timestamp
         
         # Calculate values for the three voltage phases
         voltage_a = voltage_peak * np.sin(angle)
@@ -396,22 +426,22 @@ class UDPClient:
         # Calculate values for the three current phases
         # Add a small phase shift to simulate typical power factor
         # Get the actual power factor or use 0.95 as fallback
-        actual_pf = self.latest_data.get('Power_Factor', 0.95)
         # Ensure power factor is in valid range (-1 to 1)
-        actual_pf = max(-1.0, min(1.0, actual_pf))
+        actual_pf = max(-1.0, min(1.0, power_factor))
         power_factor_angle = np.arccos(actual_pf)  # Assume power factor of 0.95 lagging
         current_a = current_peak * np.sin(angle - power_factor_angle)
         current_b = current_peak * np.sin(angle - self.phase_shift - power_factor_angle)
         current_c = current_peak * np.sin(angle + self.phase_shift - power_factor_angle)
         
-        # Store the calculated values
-        self.waveform_data['Grid_Voltage']['phaseA'].append(voltage_a)
-        self.waveform_data['Grid_Voltage']['phaseB'].append(voltage_b)
-        self.waveform_data['Grid_Voltage']['phaseC'].append(voltage_c)
-        
-        self.waveform_data['Grid_Current']['phaseA'].append(current_a)
-        self.waveform_data['Grid_Current']['phaseB'].append(current_b)
-        self.waveform_data['Grid_Current']['phaseC'].append(current_c)
+        # Store the calculated values with thread safety
+        with self.data_lock:
+            self.waveform_data['Grid_Voltage']['phaseA'].append(voltage_a)
+            self.waveform_data['Grid_Voltage']['phaseB'].append(voltage_b)
+            self.waveform_data['Grid_Voltage']['phaseC'].append(voltage_c)
+            
+            self.waveform_data['Grid_Current']['phaseA'].append(current_a)
+            self.waveform_data['Grid_Current']['phaseB'].append(current_b)
+            self.waveform_data['Grid_Current']['phaseC'].append(current_c)
     
     def get_latest_data(self):
         """
@@ -422,9 +452,8 @@ class UDPClient:
         dict
             Dictionary containing the latest value for each parameter.
         """
-        return self.latest_data.copy()
-    
-    # Add this function to your UDPClient class:
+        with self.data_lock:
+            return self.latest_data.copy()  # Return a copy to prevent modification
 
     def filter_by_time_window(self, time_data, *data_series, time_window=None):
         """
@@ -450,7 +479,8 @@ class UDPClient:
             return (time_data,) + data_series
         
         try:
-            # Create safe copies to avoid race conditions
+            # Create safe copies to avoid race conditions - no lock needed here
+            # since we're working with copies provided by the caller
             time_copy = np.array(time_data, copy=True)
             data_copies = [np.array(series, copy=True) for series in data_series]
             
@@ -506,11 +536,12 @@ class UDPClient:
         if waveform_type not in self.waveform_data:
             return np.array([]), np.array([]), np.array([]), np.array([])
         
-        # Get all history first
-        time_data = np.array(list(self.time_history))
-        phase_a = np.array(list(self.waveform_data[waveform_type]['phaseA']))
-        phase_b = np.array(list(self.waveform_data[waveform_type]['phaseB']))
-        phase_c = np.array(list(self.waveform_data[waveform_type]['phaseC']))
+        # Get all history first with thread safety
+        with self.time_lock:
+            time_data = np.array(list(self.time_history))
+            phase_a = np.array(list(self.waveform_data[waveform_type]['phaseA']))
+            phase_b = np.array(list(self.waveform_data[waveform_type]['phaseB']))
+            phase_c = np.array(list(self.waveform_data[waveform_type]['phaseC']))
         
         # IMPORTANT FIX: If there's any data but less than enough for time_window,
         # return all available data rather than an empty set
@@ -633,3 +664,39 @@ class UDPClient:
             True if the client is running and has received data, False otherwise.
         """
         return self.is_running and len(self.time_history) > 0
+    
+    def reconnect(self):
+        """
+        Attempt to reconnect the UDP socket if it was closed or had an error.
+        
+        Returns:
+        --------
+        bool
+            True if reconnection was successful, False otherwise.
+        """
+        print("Attempting to reconnect UDP client...")
+        
+        # Clean up existing socket if any
+        if self.socket:
+            try:
+                self.socket.close()
+            except:
+                pass
+            self.socket = None
+        
+        try:
+            # Create a new UDP socket
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.socket.settimeout(1.0)
+            self.socket.bind(("0.0.0.0", self.listen_port))
+            _, self.client_port = self.socket.getsockname()
+            
+            print(f"UDP client reconnected on port {self.client_port}")
+            
+            # Send a new hello packet
+            self._send_hello_packet()
+            return True
+        except Exception as e:
+            print(f"Reconnection failed: {e}")
+            return False

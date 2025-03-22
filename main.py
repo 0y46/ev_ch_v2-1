@@ -19,25 +19,30 @@ from config_manager import ConfigManager
 from ui_components import GraphWidget, GaugeWidget, TableWidget, FixedButtonWidget, EnergyHubWidget, GaugeGridWidget
 from udp_helper import initialize_udp
 
+from network_config import DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT
+
 class EVChargingMonitor(QMainWindow):
     """Main application window for EV Charging Station Monitor"""
     
         # In the __init__ method of EVChargingMonitor class, update to use UDP client:
-    def __init__(self, use_real_data=False, udp_ip="0.0.0.0", udp_port=5000):
+    def __init__(self, use_real_data=False, udp_ip="0.0.0.0", udp_port=8888):
         super().__init__()
         
         # Initialize components with real data option
+        # DataSimulator will create a UDPClient that RECEIVES on udp_port (8888)
         self.data_simulator = DataSimulator(use_real_data=use_real_data, 
                                         udp_ip=udp_ip, 
                                         udp_port=udp_port)
         self.data_logger = DataLogger()
         self.config_manager = ConfigManager()
         
-        # Initialize UDP client for sending parameter updates
-        # Replace "192.168.1.100" with IP address
-        # Replace 5001 with the port specified for receiving updates
-        initialize_udp(target_ip=udp_ip, target_port=udp_port,local_port=udp_port)
-        print("UDP client initialized for sending parameter updates")
+        # Initialize UDP helper for SENDING parameter updates
+        # Use a different port (0 = let OS choose) for the local sending port
+        # But set the target port to udp_port (8888) where the server listens
+
+        initialize_udp(target_ip=udp_ip, target_port=udp_port,local_port=0)
+        print(f"UDP client initialized for sending parameter updates to {udp_ip}:{udp_port}")
+
 
         # Dictionary to track widgets for layout management
         self.widgets = {}
@@ -359,17 +364,38 @@ class EVChargingMonitor(QMainWindow):
                         widget.setup_grid_settings_table()
                 
     
-    # Add this to the closeEvent method to ensure clean shutdown:
+
     def closeEvent(self, event):
-        """Handle window close event"""
+        """Handle window close event with graceful shutdown of all components"""
+        print("Starting application shutdown sequence...")
+        
         # Stop logging if active
-        if self.data_logger.is_logging:
+        if hasattr(self, 'data_logger') and self.data_logger.is_logging:
+            print("Stopping data logger...")
             self.data_logger.stop_logging()
         
-        # Clean shutdown of data simulator
-        self.data_simulator.shutdown()
+        # Stop the update timer first to prevent accessing data during cleanup
+        if hasattr(self, 'timer') and self.timer.isActive():
+            print("Stopping update timer...")
+            self.timer.stop()
         
-        # Don't automatically save layout on close
+        # Allow some time for threads to notice the timer has stopped
+        import time
+        time.sleep(0.2)
+        
+        # Clean shutdown of data simulator
+        if hasattr(self, 'data_simulator'):
+            print("Shutting down data simulator...")
+            self.data_simulator.shutdown()
+        
+        # Explicitly close and clean up UDP helper
+        from udp_helper import get_udp_client
+        udp_client = get_udp_client()
+        if udp_client:
+            print("Shutting down UDP helper...")
+            udp_client.close()
+        
+        print("Shutdown complete.")
         event.accept()
 
 # Update the main block to add command line arguments:
@@ -377,8 +403,8 @@ if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='EV Charging Station Monitor')
     parser.add_argument('--real-data', action='store_true', help='Use real data from UDP')
-    parser.add_argument('--udp-ip', type=str, default='0.0.0.0', help='UDP IP address')
-    parser.add_argument('--udp-port', type=int, default=5000, help='UDP port')
+    parser.add_argument('--udp-ip', type=str, default=DEFAULT_SERVER_IP, help='UDP IP address')
+    parser.add_argument('--udp-port', type=int, default=DEFAULT_SERVER_PORT, help='UDP port')
     args = parser.parse_args()
     
     app = QApplication(sys.argv)
