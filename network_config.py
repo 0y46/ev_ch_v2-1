@@ -6,7 +6,7 @@ of the application to ensure consistency and make changes easier.
 """
 
 # Standard network configuration
-DEFAULT_SERVER_PORT = 5000  # The port where the hardware/test server listens
+DEFAULT_SERVER_PORT = 8888  # The port where the hardware/test server listens
 DEFAULT_CLIENT_PORT = 0     # 0 means OS will assign an available port (for client binding)
 DEFAULT_SERVER_IP = "127.0.0.1"  # Default IP for local testing/development
 DEFAULT_BROADCAST_IP = "0.0.0.0"  # For binding to all interfaces when receiving
