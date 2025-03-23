@@ -36,4 +36,4 @@ DEFAULT_TIME_WINDOW = 1.0  # Default time window for displaying waveform data (i
                            # Lower values = faster updates but less history
                            # Higher values = more history but may decrease responsiveness
 
-DEFAULT_UI_UPDATE_INTERVAL = 300  # milliseconds
+DEFAULT_UI_UPDATE_INTERVAL = 100  # milliseconds

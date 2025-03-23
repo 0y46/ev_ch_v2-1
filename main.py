@@ -163,6 +163,24 @@ class EVChargingMonitor(QMainWindow):
         
         # setup the energy hub widget
         self.setup_energy_hub()
+
+        # Create fullscreen toggle button in top-right corner
+        self.fs_button = QPushButton("⛶", self)  # Unicode fullscreen symbol
+        self.fs_button.setToolTip("Toggle Fullscreen")
+        self.fs_button.setGeometry(250, 100, 50, 50)  # Position in top-right
+        self.fs_button.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(40, 40, 40, 120); 
+                color: white;
+                border-radius: 25px;
+                font-size: 24px;
+            }
+            QPushButton:hover {
+                background-color: rgba(60, 60, 60, 180);
+            }
+        """)
+        self.fs_button.clicked.connect(self.toggle_fullscreen)
+        self.fs_button.raise_()  # Bring to front
     
     def setup_about_tab(self):
         """Set up the About tab with project information"""
@@ -544,6 +562,23 @@ class EVChargingMonitor(QMainWindow):
         else:
             super().keyPressEvent(event)
 
+    def toggle_fullscreen(self):
+        """Toggle between fullscreen and normal window"""
+        if self.isFullScreen():
+            self.showNormal()
+        else:
+            self.showFullScreen()
+
+    def showEvent(self, event):
+        """Called when the window is shown"""
+        super().showEvent(event)
+        
+        # If fullscreen argument was provided, ensure we go fullscreen
+        # after the window is properly initialized
+        if hasattr(self, 'should_fullscreen') and self.should_fullscreen:
+            # Use a timer to ensure window is fully loaded before fullscreen
+            QTimer.singleShot(1000, self.showFullScreen)
+
     def closeEvent(self, event):
         """Handle window close event with graceful shutdown of all components"""
         print("Starting application shutdown sequence...")
@@ -589,9 +624,9 @@ if __name__ == "__main__":
     window = EVChargingMonitor(use_real_data=args.real_data, 
                               udp_ip=args.udp_ip, 
                               udp_port=args.udp_port)
-    window.show()
-    sys.exit(app.exec_())
 
+    window.should_fullscreen = args.fullscreen
+    
     if args.fullscreen:
         # First show normal to make sure window is created
         window.show()
@@ -599,3 +634,5 @@ if __name__ == "__main__":
         QTimer.singleShot(500, window.showFullScreen)
     else:
         window.show()
+
+    sys.exit(app.exec_())

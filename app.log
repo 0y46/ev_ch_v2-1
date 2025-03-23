@@ -1,0 +1,1050 @@
+QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-qeeri'
+Initializing unified UDP handler for real data...
+UDP socket initialized on port 34811 for bidirectional communication
+Configured to communicate with server at 127.0.0.1:8888
+Sent hello packet to server at 127.0.0.1:8888
+Started receive thread - listening for messages
+Unified UDP handler initialized for bidirectional communication
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Sent hello packet to server at 127.0.0.1:8888
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Sent hello packet to server at 127.0.0.1:8888
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Starting application shutdown sequence...
+Stopping update timer...
+Shutting down data simulator...
+Shutting down unified UDP handler...
+Stopping UDP handler...
+Waiting for receive thread to terminate...
+Closing UDP socket...
+UDP handler stopped
+Shutdown complete.
+QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-qeeri'
+Initializing unified UDP handler for real data...
+UDP socket initialized on port 35106 for bidirectional communication
+Configured to communicate with server at 127.0.0.1:8888
+Sent hello packet to server at 127.0.0.1:8888
+Started receive thread - listening for messages
+Unified UDP handler initialized for bidirectional communication
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Sent hello packet to server at 127.0.0.1:8888
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Sent hello packet to server at 127.0.0.1:8888
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Sent hello packet to server at 127.0.0.1:8888
+Starting application shutdown sequence...
+Stopping update timer...
+Shutting down data simulator...
+Shutting down unified UDP handler...
+Stopping UDP handler...
+Waiting for receive thread to terminate...
+Closing UDP socket...
+UDP handler stopped
+Shutdown complete.
+QStandardPaths: wrong permissions on runtime directory /run/user/1000, 0770 instead of 0700
+Initializing unified UDP handler for real data...
+UDP socket initialized on port 38467 for bidirectional communication
+Configured to communicate with server at 127.0.0.1:8888
+Sent hello packet to server at 127.0.0.1:8888
+Started receive thread - listening for messages
+Unified UDP handler initialized for bidirectional communication
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Sent hello packet to server at 127.0.0.1:8888
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Sent hello packet to server at 127.0.0.1:8888
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Sent hello packet to server at 127.0.0.1:8888
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Sent hello packet to server at 127.0.0.1:8888
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Sent hello packet to server at 127.0.0.1:8888
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Sent hello packet to server at 127.0.0.1:8888
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Sent hello packet to server at 127.0.0.1:8888
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Starting application shutdown sequence...
+Stopping update timer...
+Shutting down data simulator...
+Shutting down unified UDP handler...
+Stopping UDP handler...
+Waiting for receive thread to terminate...
+Closing UDP socket...
+UDP handler stopped
+Shutdown complete.
+QStandardPaths: wrong permissions on runtime directory /run/user/1000, 0770 instead of 0700
+Initializing unified UDP handler for real data...
+UDP socket initialized on port 39840 for bidirectional communication
+Configured to communicate with server at 127.0.0.1:8888
+Sent hello packet to server at 127.0.0.1:8888
+Started receive thread - listening for messages
+Unified UDP handler initialized for bidirectional communication
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Sent hello packet to server at 127.0.0.1:8888
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Starting application shutdown sequence...
+Stopping update timer...
+Shutting down data simulator...
+Shutting down unified UDP handler...
+Stopping UDP handler...
+Waiting for receive thread to terminate...
+Closing UDP socket...
+UDP handler stopped
+Shutdown complete.
+QStandardPaths: wrong permissions on runtime directory /run/user/1000, 0770 instead of 0700
+Initializing unified UDP handler for real data...
+UDP socket initialized on port 35314 for bidirectional communication
+Configured to communicate with server at 127.0.0.1:8888
+Sent hello packet to server at 127.0.0.1:8888
+Started receive thread - listening for messages
+Unified UDP handler initialized for bidirectional communication
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Starting application shutdown sequence...
+Stopping update timer...
+Sent hello packet to server at 127.0.0.1:8888
+Shutting down data simulator...
+Shutting down unified UDP handler...
+Stopping UDP handler...
+Waiting for receive thread to terminate...
+Closing UDP socket...
+UDP handler stopped
+Shutdown complete.
+QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-qeeri'
+Initializing unified UDP handler for real data...
+UDP socket initialized on port 35426 for bidirectional communication
+Configured to communicate with server at 127.0.0.1:8888
+Sent hello packet to server at 127.0.0.1:8888
+Started receive thread - listening for messages
+Unified UDP handler initialized for bidirectional communication
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Sent hello packet to server at 127.0.0.1:8888
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Starting application shutdown sequence...
+Stopping update timer...
+Shutting down data simulator...
+Shutting down unified UDP handler...
+Stopping UDP handler...
+Waiting for receive thread to terminate...
+Closing UDP socket...
+UDP handler stopped
+Shutdown complete.
+QStandardPaths: wrong permissions on runtime directory /run/user/1000, 0770 instead of 0700
+Initializing unified UDP handler for real data...
+UDP socket initialized on port 39171 for bidirectional communication
+Configured to communicate with server at 127.0.0.1:8888
+Sent hello packet to server at 127.0.0.1:8888
+Started receive thread - listening for messages
+Unified UDP handler initialized for bidirectional communication
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Sent hello packet to server at 127.0.0.1:8888
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Starting application shutdown sequence...
+Stopping update timer...
+Shutting down data simulator...
+Shutting down unified UDP handler...
+Stopping UDP handler...
+Waiting for receive thread to terminate...
+Closing UDP socket...
+UDP handler stopped
+Shutdown complete.
+QStandardPaths: wrong permissions on runtime directory /run/user/1000, 0770 instead of 0700
+Initializing unified UDP handler for real data...
+UDP socket initialized on port 55832 for bidirectional communication
+Configured to communicate with server at 127.0.0.1:8888
+Sent hello packet to server at 127.0.0.1:8888
+Started receive thread - listening for messages
+Unified UDP handler initialized for bidirectional communication
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Sent hello packet to server at 127.0.0.1:8888
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Starting application shutdown sequence...
+Stopping update timer...
+Sent hello packet to server at 127.0.0.1:8888
+Shutting down data simulator...
+Shutting down unified UDP handler...
+Stopping UDP handler...
+Waiting for receive thread to terminate...
+Closing UDP socket...
+UDP handler stopped
+Shutdown complete.

@@ -1000,6 +1000,9 @@ class FixedButtonWidget(QFrame):
                 padding: 0px;
                 margin: 0px;
                 border: 1px solid #388E3C;
+                }
+                QPushButton:hover {
+                background-color: rgba(60, 60, 60, 180);
             """)
         elif color == "red":
             button.setStyleSheet("""
@@ -1008,6 +1011,9 @@ class FixedButtonWidget(QFrame):
                 padding: 0px;
                 margin: 0px;
                 border: 1px solid #D32F2F;
+                }
+                QPushButton:hover {
+                background-color: rgba(60, 60, 60, 180);
             """)
         else:
             button.setStyleSheet("""
