@@ -530,7 +530,19 @@ class EVChargingMonitor(QMainWindow):
                     elif widget_id == "grid_settings_table":
                         widget.setup_grid_settings_table()
                 
-    
+    def keyPressEvent(self, event):
+        """Handle key press events"""
+        # Press F11 to toggle fullscreen
+        if event.key() == Qt.Key_F11:
+            if self.isFullScreen():
+                self.showNormal()
+            else:
+                self.showFullScreen()
+        # Escape key exits fullscreen but doesn't close
+        elif event.key() == Qt.Key_Escape and self.isFullScreen():
+            self.showNormal()
+        else:
+            super().keyPressEvent(event)
 
     def closeEvent(self, event):
         """Handle window close event with graceful shutdown of all components"""
@@ -569,6 +581,7 @@ if __name__ == "__main__":
     parser.add_argument('--real-data', action='store_true', help='Use real data from UDP')
     parser.add_argument('--udp-ip', type=str, default=DEFAULT_SERVER_IP, help='UDP IP address')
     parser.add_argument('--udp-port', type=int, default=DEFAULT_SERVER_PORT, help='UDP port')
+    parser.add_argument('--fullscreen', action='store_true', help='Start in fullscreen mode')
     args = parser.parse_args()
     
     app = QApplication(sys.argv)
@@ -578,3 +591,11 @@ if __name__ == "__main__":
                               udp_port=args.udp_port)
     window.show()
     sys.exit(app.exec_())
+
+    if args.fullscreen:
+        # First show normal to make sure window is created
+        window.show()
+        # Add a small delay to make sure window manager registers it
+        QTimer.singleShot(500, window.showFullScreen)
+    else:
+        window.show()

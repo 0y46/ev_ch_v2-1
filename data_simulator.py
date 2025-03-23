@@ -7,6 +7,7 @@ import time
 import numpy as np
 import random
 from unified_udp import get_unified_udp
+from network_config import DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT, DEFAULT_TIME_WINDOW
 
 class DataSimulator:
     """
@@ -17,7 +18,7 @@ class DataSimulator:
     2. Real-time mode: Get data from a UDP client connected to real hardware
     """
     
-    def __init__(self, use_real_data=False, udp_ip="0.0.0.0", udp_port=5000, unified_udp=None):
+    def __init__(self, use_real_data=False, udp_ip=DEFAULT_SERVER_IP, udp_port=DEFAULT_SERVER_PORT, unified_udp=None):
         """
         Initialize the data simulator.
         
@@ -114,7 +115,7 @@ class DataSimulator:
         if self.use_real_data and self.unified_udp:
             # Get data from unified UDP handler
             time_data, va_data, vb_data, vc_data = self.unified_udp.get_waveform_data(
-                'Grid_Voltage', time_window=1)
+                'Grid_Voltage', time_window=DEFAULT_TIME_WINDOW)
             
             # Adjust timestamps to be relative to application start time
             if len(time_data) > 0:
@@ -171,7 +172,7 @@ class DataSimulator:
         
         if self.use_real_data and self.unified_udp:
             # Get data from UDP client
-            time_data, ia_data, ib_data, ic_data = self.unified_udp.get_waveform_data('Grid_Current', time_window=1)
+            time_data, ia_data, ib_data, ic_data = self.unified_udp.get_waveform_data('Grid_Current', time_window=DEFAULT_TIME_WINDOW)
             
             # Adjust timestamps to be relative to application start time
             if len(time_data) > 0:  # Properly indented!
@@ -229,7 +230,7 @@ class DataSimulator:
         
         if self.use_real_data and self.unified_udp:
             # Get data from UDP client
-            time_data, p_grid, p_pv, p_ev, p_battery = self.unified_udp.get_power_data(time_window=1)
+            time_data, p_grid, p_pv, p_ev, p_battery = self.unified_udp.get_power_data(time_window=DEFAULT_TIME_WINDOW)
             
             # Adjust timestamps to be relative to application start time
             if len(time_data) > 0:  # Properly indented!

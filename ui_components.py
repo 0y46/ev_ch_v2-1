@@ -4,7 +4,7 @@
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                             QTableWidget, QTableWidgetItem, QPushButton,
                             QLineEdit, QRadioButton, QButtonGroup, QFrame,
-                            QSizePolicy, QApplication, QHeaderView, QGridLayout, QCheckBox, QSpacerItem, QSizePolicy)
+                            QSizePolicy, QHeaderView, QGridLayout, QSizePolicy)
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QSize
 import pyqtgraph as pg
 import numpy as np
@@ -1049,13 +1049,14 @@ class EnergyHubWidget(FixedWidget):
         # Title label with reduced height
         self.title_label = QLabel("Smart Energy Hub")
         self.title_label.setAlignment(Qt.AlignCenter)
-        self.title_label.setStyleSheet("font-weight: bold; font-size: 16px; margin-bottom: 0px;")
+        self.title_label.setStyleSheet("background-color: #FFFFFF; font-weight: bold; font-size: 16px; margin-bottom: 0px;")
         self.title_label.setMaximumHeight(25)  # Keep title compact
         layout.addWidget(self.title_label)
         
         # Container for the hub visualization - optimized for remaining space
         self.hub_container = QWidget()
-        
+        self.hub_container.setStyleSheet('background-color: #FFFFFF')
+
         # Grid layout with minimal padding
         self.hub_layout = QGridLayout(self.hub_container)
         self.hub_layout.setContentsMargins(5, 5, 5, 5)
@@ -1096,11 +1097,10 @@ class EnergyHubWidget(FixedWidget):
     
     def setup_hub_components(self):
         """Set up all the components of the energy hub with proper z-ordering and sizing"""
-        from PyQt5.QtWidgets import QSizePolicy
         
         # 1. Increase spacing to prevent clipping
-        self.hub_layout.setSpacing(10)  # Add some space between cells
-        self.hub_layout.setContentsMargins(10, 10, 10, 10)  # Add margins around the grid
+        self.hub_layout.setSpacing(0)  # Add some space between cells
+        self.hub_layout.setContentsMargins(0, 0, 0, 0)  # Add margins around the grid
         
         # 2. Set up components - order matters for z-ordering
         # Place background components first, status indicators last
@@ -1168,7 +1168,7 @@ class EnergyHubWidget(FixedWidget):
         self.grid_status_label.setAlignment(Qt.AlignCenter)
         self.grid_status_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.grid_status_label.setMinimumSize(80, 80)
-        self.hub_layout.addWidget(self.grid_status_label, 1, 18, 1, 2)
+        self.hub_layout.addWidget(self.grid_status_label, 1, 17, 1, 2)
         # Raise to front
         self.grid_status_label.raise_()
         
@@ -1177,7 +1177,7 @@ class EnergyHubWidget(FixedWidget):
         self.battery_status_label.setAlignment(Qt.AlignCenter)
         self.battery_status_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.battery_status_label.setMinimumSize(80, 80)
-        self.hub_layout.addWidget(self.battery_status_label, 2, 18, 1, 2)
+        self.hub_layout.addWidget(self.battery_status_label, 2, 17, 1, 2)
         # Raise to front
         self.battery_status_label.raise_()
         

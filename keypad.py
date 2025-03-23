@@ -5,7 +5,7 @@ This module provides a touch-friendly numeric keypad as an alternative to using 
 """
 
 from PyQt5.QtWidgets import (QDialog, QGridLayout, QPushButton, QLineEdit,
-                           QVBoxLayout, QHBoxLayout, QSizePolicy, QDialogButtonBox)
+                           QVBoxLayout, QSizePolicy, QDialogButtonBox)
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 
