@@ -10,6 +10,8 @@ import pyqtgraph as pg
 import numpy as np
 from PyQt5.QtGui import QColor, QPainter, QPen, QBrush, QFont, QMovie, QPixmap
 from keypad import NumericKeypad
+from pg_gauge import PyQtGraphGauge
+
 
 class FixedWidget(QFrame):
     """
@@ -406,6 +408,8 @@ class GaugeWidget(FixedWidget):
     def set_value(self, value):
         """Set the gauge value and update display"""
         # Ensure value is within range
+        print(f"Setting gauge {self.title} to {value} (min={self.min_value}, max={self.max_value}, normalized={normalized:.2f}, angle={angle_deg:.1f}°)")
+
         self.value = max(self.min_value, min(value, self.max_value))
         
         # Format to 1 decimal place for cleaner display
@@ -413,9 +417,9 @@ class GaugeWidget(FixedWidget):
         
         # Update the value color based on position in color zones
         self._update_value_label_color()
-        
         # Force repaint
         self.gauge_area.update()
+
     
     def _update_value_label_color(self):
         """Update value label color based on current value's position in color zones"""
@@ -636,17 +640,8 @@ class GaugeGridWidget(QFrame):
         row = (len(self.gauges) // 3) + 1  # +1 because row 0 is title
         col = len(self.gauges) % 3
         
-        # Create a gauge widget
-        gauge = GaugeWidget(self, title, min_value, max_value, units, gauge_id)
-        
-        # Configure gauge for use within a container - no individual frame needed
-        gauge.setFrameStyle(QFrame.NoFrame)
-        
-        # These are crucial to prevent gauges from being draggable
-        gauge.setMouseTracking(False)
-        gauge.mouseMoveEvent = lambda e: None    # Disable mouse events
-        gauge.mousePressEvent = lambda e: None
-        gauge.mouseReleaseEvent = lambda e: None
+        # Create a gauge widget using the PyQtGraph implementation
+        gauge = PyQtGraphGauge(self, title, min_value, max_value, units, gauge_id)
         
         # Add gauge to layout with alignment for better positioning
         self.layout.addWidget(gauge, row, col, Qt.AlignCenter)
@@ -940,13 +935,16 @@ class TableWidget(FixedWidget):  # Assuming you changed from DraggableWidget to 
                 
                 # Create radio button group
                 radio_on = QRadioButton("On")
+                radio_on.setStyleSheet("font-weight: bold;")
                 radio_off = QRadioButton("Off")
+                radio_off.setStyleSheet("font-weight: bold;")
                 
                 # Center the radio buttons
                 radio_layout.addStretch(1)
                 radio_layout.addWidget(radio_on)
                 radio_layout.addWidget(radio_off)
                 radio_layout.addStretch(1)
+                
                 
                 # Set default selection
                 if param["default"]:
@@ -958,10 +956,9 @@ class TableWidget(FixedWidget):  # Assuming you changed from DraggableWidget to 
                 button_group = QButtonGroup(radio_widget)
                 button_group.addButton(radio_on)
                 button_group.addButton(radio_off)
-                
+
                 # Store reference to button group
                 self.radio_groups[param["name"]] = button_group
-                
                 self.table.setCellWidget(i, 2, radio_widget)
             
             # Set the row height
