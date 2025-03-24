@@ -1,10 +1,9 @@
 # pg_gauge.py
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QGraphicsLineItem, QGraphicsEllipseItem
 from PyQt5.QtCore import Qt, QRectF
 from PyQt5.QtGui import QColor, QPen, QBrush, QPainter, QFont
 import pyqtgraph as pg
 import numpy as np
-from PyQt5.QtWidgets import QGraphicsLineItem, QGraphicsEllipseItem
 
 class PyQtGraphGauge(QWidget):
     """
@@ -22,6 +21,7 @@ class PyQtGraphGauge(QWidget):
         self.units = units
         self.widget_id = widget_id
         self.value = min_value
+        self.actual_value = min_value
         
         # Set fixed size to match original gauge
         self.setFixedSize(165, 110)
@@ -31,8 +31,8 @@ class PyQtGraphGauge(QWidget):
         
         # Set up layout
         layout = QVBoxLayout()
-        layout.setContentsMargins(2, 1, 2, 5)  # Small margins
-        layout.setSpacing(2)  # Minimal spacing
+        layout.setContentsMargins(25, 0, 25, 0)  # Small margins
+        layout.setSpacing(0)  # Minimal spacing
         self.setLayout(layout)
         
         # Add title label
@@ -87,24 +87,26 @@ class PyQtGraphGauge(QWidget):
         # Create the main arc
         self.arc = self.plot_widget.plot(x, y, pen=pg.mkPen('gray', width=10))
         
-        # Create the pointer - store as instance variable for updates
-        # Note: We'll position it in set_value method
-        self.pointer_line = QGraphicsLineItem(0, 0, 0.8, 0)
-        self.pointer_line.setPen(pg.mkPen('black', width=3))
-        self.plot_widget.addItem(self.pointer_line)
+        # Create a simple line for the pointer
+        # Start with 0 length - will update in set_value
+        self.pointer = self.plot_widget.plot([0, 0], [0, 0], pen=pg.mkPen('black', width=3))
         
-        # Add center dot for pointer pivot
-        self.center_dot = QGraphicsEllipseItem(-0.05, -0.05, 0.1, 0.1)
-        self.center_dot.setBrush(pg.mkBrush('black'))
-        self.plot_widget.addItem(self.center_dot)
+        # Add center dot for pointer pivot - avoiding sqrt warnings
+        center_x = 0
+        center_y = 0
+        dot_radius = 0.05
+        theta = np.linspace(0, 2*np.pi, 30)
+        dot_x = center_x + dot_radius * np.cos(theta)
+        dot_y = center_y + dot_radius * np.sin(theta)
+        self.plot_widget.plot(dot_x, dot_y, pen=None, fillLevel=0, brush=pg.mkBrush('black'))
         
         # Add min/max labels
         min_text = pg.TextItem(text=str(self.min_value), color='black', anchor=(0.5, 0))
-        min_text.setPos(np.cos(225 * np.pi/180) * 0.9, np.sin(225 * np.pi/180) * 0.9)
+        min_text.setPos(np.cos(225 * np.pi/180) * 0.9, np.sin(225 * np.pi/180) * 0.75)
         self.plot_widget.addItem(min_text)
         
         max_text = pg.TextItem(text=str(self.max_value), color='black', anchor=(0.5, 0))
-        max_text.setPos(np.cos(-45 * np.pi/180) * 0.9, np.sin(-45 * np.pi/180) * 0.9)
+        max_text.setPos(np.cos(-45 * np.pi/180) * 0.9, np.sin(-45 * np.pi/180) * 0.75)
         self.plot_widget.addItem(max_text)
     
     def _configure_colors(self):
@@ -114,11 +116,6 @@ class PyQtGraphGauge(QWidget):
         yellow = (241, 196, 15)  # Yellow
         green = (46, 204, 113)   # Green
         orange = (230, 126, 34)  # Orange
-        
-        # Remove any existing color segments
-        for item in self.plot_widget.items():
-            if isinstance(item, pg.PlotDataItem) and item != self.arc:
-                self.plot_widget.removeItem(item)
         
         # Create color gradient
         if "Frequency" in self.title or "Voltage" in self.title:
@@ -209,14 +206,23 @@ class PyQtGraphGauge(QWidget):
     
     def set_value(self, value):
         """Set the gauge value and update pointer"""
-        # Ensure value is within range
-        self.value = max(self.min_value, min(value, self.max_value))
+        # Store the actual value (unclamped) for display
+        self.actual_value = value
         
-        # Update value label with 2 decimal places
-        self.value_label.setText(f"{self.value:.2f} {self.units}")
+        # For pointer position, clamp within min-max range
+        clamped_value = max(self.min_value, min(value, self.max_value))
         
-        # Calculate normalized position (0.0 to 1.0)
-        normalized = (self.value - self.min_value) / (self.max_value - self.min_value)
+        # Update value label with actual value (not clamped)
+        self.value_label.setText(f"{self.actual_value:.2f} {self.units}")
+        
+        # If value is out of range, highlight it in red
+        if value > self.max_value or value < self.min_value:
+            self.value_label.setStyleSheet("font-size: 12px; font-weight: bold; color: red; background-color: white;")
+        else:
+            self.value_label.setStyleSheet("font-size: 12px; font-weight: bold; color: blue; background-color: white;")
+        
+        # Calculate normalized position using clamped value (for pointer)
+        normalized = (clamped_value - self.min_value) / (self.max_value - self.min_value)
         
         # Calculate angle in radians (225° to -45°)
         angle_deg = 225 - normalized * 270
@@ -228,4 +234,4 @@ class PyQtGraphGauge(QWidget):
         end_y = 0.8 * np.sin(angle_rad)
         
         # Update the pointer line
-        self.pointer_line.setLine(0, 0, end_x, end_y)
+        self.pointer.setData([0, end_x], [0, end_y])
