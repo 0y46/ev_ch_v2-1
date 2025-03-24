@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                             QTableWidget, QTableWidgetItem, QPushButton,
                             QLineEdit, QRadioButton, QButtonGroup, QFrame,
                             QSizePolicy, QHeaderView, QGridLayout, QSizePolicy)
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QSize
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QSize, QRect
 import pyqtgraph as pg
 import numpy as np
 from PyQt5.QtGui import QColor, QPainter, QPen, QBrush, QFont, QMovie, QPixmap
@@ -296,12 +296,16 @@ class GraphWidget(FixedWidget):
             self.lines[3].setData(time_data, p_battery)
 
 class GaugeWidget(FixedWidget):
-    """Widget for displaying gauge measurements"""
+    """
+    Modern gauge widget with color zones and minimal display.
+    Shows only min and max values with customized color gradients.
+    """
     
     def __init__(self, parent=None, title="Gauge", min_value=0, max_value=100, 
                  units="", widget_id=None):
         super().__init__(parent, widget_id)
         
+        # Basic properties
         self.title = title
         self.min_value = min_value
         self.max_value = max_value
@@ -312,12 +316,12 @@ class GaugeWidget(FixedWidget):
         self.setFrameStyle(QFrame.NoFrame)
         
         # Smaller minimum size for gauges
-        self.setMinimumSize(120, 120)
+        self.setMinimumSize(100, 100)
         
         # Create layout with reduced spacing
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)  # Remove margins
-        layout.setSpacing(2)  # Reduce spacing between elements
+        layout.setSpacing(0)  # Reduce spacing between elements
         self.setLayout(layout)
         
         # Add title label
@@ -327,9 +331,9 @@ class GaugeWidget(FixedWidget):
         layout.addWidget(self.title_label)
         
         # Value label will be updated with the current value
-        self.value_label = QLabel(f"{self.value:.2f} {self.units}")
+        self.value_label = QLabel(f"{self.value:.1f} {self.units}")
         self.value_label.setAlignment(Qt.AlignCenter)
-        self.value_label.setStyleSheet("font-size: 14px; color: blue;")
+        self.value_label.setStyleSheet("font-size: 14px; font-weight: bold; color: blue;")
         layout.addWidget(self.value_label)
         
         # The gauge will be drawn on the paintEvent
@@ -338,24 +342,122 @@ class GaugeWidget(FixedWidget):
         layout.addWidget(self.gauge_area)
         
         # Give more space to the gauge area
-        layout.setStretchFactor(self.gauge_area, 3)
-        layout.setStretchFactor(self.title_label, 1)
-        layout.setStretchFactor(self.value_label, 1)
+        layout.setStretchFactor(self.gauge_area, 4)
+        layout.setStretchFactor(self.title_label, 0)
+        layout.setStretchFactor(self.value_label, 0)
         
         # Colors for gauge
         self.background_color = QColor(240, 240, 240)
-        self.arc_color = QColor(200, 200, 200)
-        self.pointer_color = QColor(255, 0, 0)
-        self.text_color = QColor(0, 0, 0)
+        self.pointer_color = QColor(50, 50, 50)  # Dark gray pointer
+        self.text_color = QColor(50, 50, 50)     # Dark gray text
+        
+        # Define color zones based on gauge type
+        self.color_zones = []
+        self._setup_color_zones()
+    
+    def _setup_color_zones(self):
+        """
+        Setup color zones based on gauge type determined from title.
+        Each gauge type has a specific color pattern as specified.
+        """
+        # Define standard colors for reuse
+        red = QColor(231, 76, 60)      # Red
+        yellow = QColor(241, 196, 15)  # Yellow
+        green = QColor(46, 204, 113)   # Green
+        
+        # Determine gauge type and set appropriate color zones
+        if "Frequency" in self.title:
+            # Frequency: red → yellow → green → yellow → red
+            self.color_zones = [
+                {'pos': 0.0, 'color': red},
+                {'pos': 0.25, 'color': yellow},
+                {'pos': 0.5, 'color': green},
+                {'pos': 0.75, 'color': yellow},
+                {'pos': 1.0, 'color': red}
+            ]
+        elif "Voltage" in self.title:
+            # Voltage: red → yellow → green → yellow → red (same as frequency)
+            self.color_zones = [
+                {'pos': 0.0, 'color': red},
+                {'pos': 0.25, 'color': yellow},
+                {'pos': 0.5, 'color': green},
+                {'pos': 0.75, 'color': yellow},
+                {'pos': 1.0, 'color': red}
+            ]
+        elif "THD" in self.title:
+            # THD: green → gradually → red
+            self.color_zones = [
+                {'pos': 0.0, 'color': green},
+                {'pos': 0.33, 'color': yellow},
+                {'pos': 0.66, 'color': QColor(230, 126, 34)},  # Orange
+                {'pos': 1.0, 'color': red}
+            ]
+        elif "Current" in self.title or "Power" in self.title or "Reactive" in self.title:
+            # Current, Active Power, Reactive Power: yellow → gradually → green
+            self.color_zones = [
+                {'pos': 0.0, 'color': yellow},
+                {'pos': 0.33, 'color': QColor(186, 220, 88)},  # Yellow-green
+                {'pos': 0.66, 'color': QColor(126, 214, 100)}, # Light green
+                {'pos': 1.0, 'color': green}
+            ]
+        else:
+            # Default color scheme - simple blue gradient
+            self.color_zones = [
+                {'pos': 0.0, 'color': QColor(52, 152, 219)},   # Light blue
+                {'pos': 1.0, 'color': QColor(41, 128, 185)}    # Dark blue
+            ]
     
     def set_value(self, value):
         """Set the gauge value and update display"""
         # Ensure value is within range
         self.value = max(self.min_value, min(value, self.max_value))
-        # Format to 2 decimal places
-        self.value_label.setText(f"{self.value:.2f} {self.units}")
-        self.gauge_area.update()  # Force repaint
+        
+        # Format to 1 decimal place for cleaner display
+        self.value_label.setText(f"{self.value:.1f} {self.units}")
+        
+        # Update the value color based on position in color zones
+        self._update_value_label_color()
+        
+        # Force repaint
+        self.gauge_area.update()
     
+    def _update_value_label_color(self):
+        """Update value label color based on current value's position in color zones"""
+        if not self.color_zones:
+            return
+            
+        # Calculate normalized position (0.0 to 1.0)
+        normalized_pos = (self.value - self.min_value) / (self.max_value - self.min_value)
+        
+        # Find which color zone contains current value
+        for i in range(len(self.color_zones) - 1):
+            start_pos = self.color_zones[i]['pos']
+            end_pos = self.color_zones[i+1]['pos']
+            
+            if start_pos <= normalized_pos <= end_pos:
+                # Calculate position within this zone (0.0 to 1.0)
+                zone_pos = (normalized_pos - start_pos) / (end_pos - start_pos)
+                
+                # Get colors at zone boundaries
+                start_color = self.color_zones[i]['color']
+                end_color = self.color_zones[i+1]['color']
+                
+                # Interpolate color
+                r = start_color.red() + int(zone_pos * (end_color.red() - start_color.red()))
+                g = start_color.green() + int(zone_pos * (end_color.green() - start_color.green()))
+                b = start_color.blue() + int(zone_pos * (end_color.blue() - start_color.blue()))
+                
+                # Set new color
+                self.value_label.setStyleSheet(f"font-size: 14px; font-weight: bold; color: rgb({r},{g},{b});")
+                break
+    
+    def _interpolate_color(self, color1, color2, factor):
+        """Interpolate between two colors"""
+        r = color1.red() + int(factor * (color2.red() - color1.red()))
+        g = color1.green() + int(factor * (color2.green() - color1.green()))
+        b = color1.blue() + int(factor * (color2.blue() - color1.blue()))
+        return QColor(r, g, b)
+
     def paintEvent(self, event):
         """Draw the gauge"""
         super().paintEvent(event)
@@ -367,23 +469,98 @@ class GaugeWidget(FixedWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         
-        # Draw background (make transparent)
-        # painter.fillRect(gauge_rect, self.background_color)
-        
-        # Calculate center and radius - adjusted for compact display
+        # Calculate center and radius
         center_x = gauge_rect.x() + gauge_rect.width() / 2
-        center_y = gauge_rect.y() + gauge_rect.height() - 10  # Moved up a bit
+        center_y = gauge_rect.y() + gauge_rect.height() - 10
         radius = min(gauge_rect.width(), gauge_rect.height() * 2) / 2 - 5
         
         # Draw arc (270 degrees, from -225 to 45 degrees)
         start_angle = -225 * 16  # QPainter uses 1/16 degrees
         span_angle = 270 * 16
-        
-        # Draw background arc
-        pen = QPen(self.arc_color, 8)
-        painter.setPen(pen)
-        painter.drawArc(int(center_x - radius), int(center_y - radius), 
-                        int(radius * 2), int(radius * 2), start_angle, span_angle)
+
+        # Draw continuous colored arc with better color transitions
+        arcRect = QRect(
+            int(center_x - radius), int(center_y - radius),
+            int(radius * 2), int(radius * 2)
+        )
+
+        # Define colors and positions based on gauge type
+        red = QColor(231, 76, 60)
+        yellow = QColor(241, 196, 15)
+        green = QColor(46, 204, 113)
+
+        if "Frequency" in self.title or "Voltage" in self.title:
+            # Red → Yellow → Green → Yellow → Red
+            colors = [red, yellow, green, yellow, red]
+            
+            # Draw multiple small arcs to create gradient effect
+            steps = 100  # More steps for smoother gradient
+            angle_per_step = span_angle / steps
+            
+            for i in range(steps):
+                # Calculate position from 0-1
+                pos = i / float(steps - 1)
+                # Calculate angle for this position
+                current_angle = start_angle + int(pos * span_angle)
+                
+                # Determine which segment this position falls in
+                if pos < 0.25:
+                    # First segment: Red to Yellow
+                    segment_pos = pos / 0.25
+                    color = self._interpolate_color(red, yellow, segment_pos)
+                elif pos < 0.5:
+                    # Second segment: Yellow to Green
+                    segment_pos = (pos - 0.25) / 0.25
+                    color = self._interpolate_color(yellow, green, segment_pos)
+                elif pos < 0.75:
+                    # Third segment: Green to Yellow
+                    segment_pos = (pos - 0.5) / 0.25
+                    color = self._interpolate_color(green, yellow, segment_pos)
+                else:
+                    # Fourth segment: Yellow to Red
+                    segment_pos = (pos - 0.75) / 0.25
+                    color = self._interpolate_color(yellow, red, segment_pos)
+                
+                # Draw small arc with interpolated color
+                pen = QPen(color, 8)
+                painter.setPen(pen)
+                painter.drawArc(arcRect, current_angle, max(16, int(angle_per_step)))
+                
+        elif "THD" in self.title:
+            # Green → Yellow → Red (gradient)
+            steps = 100
+            angle_per_step = span_angle / steps
+            
+            for i in range(steps):
+                pos = i / float(steps - 1)
+                current_angle = start_angle + int(pos * span_angle)
+                
+                if pos < 0.5:
+                    # Green to Yellow
+                    color = self._interpolate_color(green, yellow, pos * 2)
+                else:
+                    # Yellow to Red
+                    color = self._interpolate_color(yellow, red, (pos - 0.5) * 2)
+                
+                pen = QPen(color, 8)
+                painter.setPen(pen)
+                painter.drawArc(arcRect, current_angle, max(16, int(angle_per_step)))
+                
+        else:  # Current, Reactive Power, Active Power - Yellow → Green
+            # Draw gradient from yellow to green
+            steps = 100
+            angle_per_step = span_angle / steps
+            
+            for i in range(steps):
+                pos = i / float(steps - 1)
+                current_angle = start_angle + int(pos * span_angle)
+                
+                # Interpolate between yellow and green
+                color = self._interpolate_color(yellow, green, pos)
+                
+                pen = QPen(color, 8)
+                painter.setPen(pen)
+                painter.drawArc(arcRect, current_angle, max(16, int(angle_per_step)))
         
         # Calculate pointer angle
         angle_range = 270  # 270 degrees
@@ -399,58 +576,33 @@ class GaugeWidget(FixedWidget):
         end_y = center_y + pointer_length * np.sin(radians)
         
         # Draw pointer
-        pen = QPen(self.pointer_color, 3)
+        pen = QPen(QColor(50, 50, 50), 3)
         painter.setPen(pen)
         painter.drawLine(int(center_x), int(center_y), int(end_x), int(end_y))
         
         # Draw center circle
-        painter.setBrush(QBrush(self.pointer_color))
+        painter.setBrush(QBrush(QColor(50, 50, 50)))
         painter.drawEllipse(int(center_x - 4), int(center_y - 4), 8, 8)
         
         # Draw min and max labels
-        painter.setPen(self.text_color)
+        painter.setPen(QColor(0, 0, 0))
         font = painter.font()
-        font.setPointSize(7)  # Smaller font for more compact display
+        font.setPointSize(8)
+        font.setBold(True)
         painter.setFont(font)
         
         # Min value text
         min_x = center_x + radius * 0.9 * np.cos(np.radians(-225))
         min_y = center_y + radius * 0.9 * np.sin(np.radians(-225))
         painter.drawText(int(min_x - 15), int(min_y + 8), 
-                         f"{self.min_value}")
+                        f"{self.min_value}")
         
         # Max value text
         max_x = center_x + radius * 0.9 * np.cos(np.radians(45))
         max_y = center_y + radius * 0.9 * np.sin(np.radians(45))
         painter.drawText(int(max_x), int(max_y), 
-                         f"{self.max_value}")
+                        f"{self.max_value}")
         
-        # Draw ticks
-        pen = QPen(self.text_color, 1)  # Thinner ticks
-        painter.setPen(pen)
-        
-        # Draw major ticks and labels
-        num_major_ticks = 5
-        for i in range(num_major_ticks + 1):
-            tick_angle = -225 + i * (270 / num_major_ticks)
-            tick_radians = np.radians(tick_angle)
-            
-            # Draw longer tick
-            inner_x = center_x + (radius - 8) * np.cos(tick_radians)
-            inner_y = center_y + (radius - 8) * np.sin(tick_radians)
-            outer_x = center_x + radius * np.cos(tick_radians)
-            outer_y = center_y + radius * np.sin(tick_radians)
-            
-            painter.drawLine(int(inner_x), int(inner_y), int(outer_x), int(outer_y))
-            
-            # Draw tick label
-            tick_value = self.min_value + i * (self.max_value - self.min_value) / num_major_ticks
-            label_x = center_x + (radius - 20) * np.cos(tick_radians)
-            label_y = center_y + (radius - 20) * np.sin(tick_radians)
-            
-            if i > 0 and i < num_major_ticks:  # Skip min and max as we already drew them
-                painter.drawText(int(label_x - 8), int(label_y + 4), f"{tick_value:.1f}")
-
 class GaugeGridWidget(QFrame):
     """
     Fixed position widget that contains multiple gauges arranged in a grid layout.
@@ -484,7 +636,7 @@ class GaugeGridWidget(QFrame):
             
             # Store references to individual gauges for later access
             self.gauges = []
-    
+
     def add_gauge(self, title, min_value, max_value, units, gauge_id=None):
         """
         Add a new gauge to the grid layout.
@@ -515,6 +667,7 @@ class GaugeGridWidget(QFrame):
         self.gauges.append(gauge)
         
         return gauge
+    
 
 class TableWidget(FixedWidget):  # Assuming you changed from DraggableWidget to FixedWidget
     """Widget for displaying editable parameter tables with optimized layout"""
@@ -526,7 +679,7 @@ class TableWidget(FixedWidget):  # Assuming you changed from DraggableWidget to 
         
         # Main layout with minimal margins
         layout = QVBoxLayout()
-        layout.setContentsMargins(5, 5, 5, 5)  # Minimal margins
+        layout.setContentsMargins(0, 0, 0, 0)  # Minimal margins
         layout.setSpacing(2)  # Minimal spacing between components
         
         # Title with proper size
