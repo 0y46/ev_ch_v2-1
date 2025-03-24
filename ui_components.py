@@ -302,7 +302,7 @@ class GaugeWidget(FixedWidget):
     """
     
     def __init__(self, parent=None, title="Gauge", min_value=0, max_value=100, 
-                 units="", widget_id=None):
+                units="", widget_id=None):
         super().__init__(parent, widget_id)
         
         # Basic properties
@@ -315,36 +315,32 @@ class GaugeWidget(FixedWidget):
         # Remove frame border for gauges
         self.setFrameStyle(QFrame.NoFrame)
         
-        # Smaller minimum size for gauges
-        self.setMinimumSize(100, 100)
+        # Force smaller size with fixed dimensions
+        self.setFixedSize(165, 110) # Smaller fixed size
         
-        # Create layout with reduced spacing
+        # Create very compact layout with no spacing
         layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)  # Remove margins
-        layout.setSpacing(0)  # Reduce spacing between elements
+        layout.setContentsMargins(5, 0, 5, 0)  # Remove all margins
+        layout.setSpacing(0)  # No spacing between elements
         self.setLayout(layout)
         
-        # Add title label
+        # Add title label with minimal height
         self.title_label = QLabel(title)
         self.title_label.setAlignment(Qt.AlignCenter)
-        self.title_label.setStyleSheet("font-weight: bold; font-size: 12px;")
+        self.title_label.setStyleSheet("font-weight: bold; font-size: 15px; padding: 0px;")
+        self.title_label.setFixedHeight(15)  # Force minimal height
         layout.addWidget(self.title_label)
         
-        # Value label will be updated with the current value
+        # Value label with minimal height
         self.value_label = QLabel(f"{self.value:.1f} {self.units}")
         self.value_label.setAlignment(Qt.AlignCenter)
-        self.value_label.setStyleSheet("font-size: 14px; font-weight: bold; color: blue;")
+        self.value_label.setStyleSheet("font-size: 12px; font-weight: bold; color: blue; padding: 0px;")
+        self.value_label.setFixedHeight(15)  # Force minimal height
         layout.addWidget(self.value_label)
         
         # The gauge will be drawn on the paintEvent
         self.gauge_area = QWidget()
-        self.gauge_area.setMinimumSize(100, 100)
         layout.addWidget(self.gauge_area)
-        
-        # Give more space to the gauge area
-        layout.setStretchFactor(self.gauge_area, 4)
-        layout.setStretchFactor(self.title_label, 0)
-        layout.setStretchFactor(self.value_label, 0)
         
         # Colors for gauge
         self.background_color = QColor(240, 240, 240)
@@ -413,7 +409,7 @@ class GaugeWidget(FixedWidget):
         self.value = max(self.min_value, min(value, self.max_value))
         
         # Format to 1 decimal place for cleaner display
-        self.value_label.setText(f"{self.value:.1f} {self.units}")
+        self.value_label.setText(f"{self.value:.2f} {self.units}")
         
         # Update the value color based on position in color zones
         self._update_value_label_color()
@@ -459,7 +455,7 @@ class GaugeWidget(FixedWidget):
         return QColor(r, g, b)
 
     def paintEvent(self, event):
-        """Draw the gauge"""
+        """Draw the gauge with improved color arcs"""
         super().paintEvent(event)
         
         # Get dimensions to draw in the gauge area
@@ -469,139 +465,129 @@ class GaugeWidget(FixedWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         
-        # Calculate center and radius
         center_x = gauge_rect.x() + gauge_rect.width() / 2
-        center_y = gauge_rect.y() + gauge_rect.height() - 10
-        radius = min(gauge_rect.width(), gauge_rect.height() * 2) / 2 - 5
+        center_y = gauge_rect.y() + gauge_rect.height() * 0.55  # Center vertically in available space
+        radius = min(gauge_rect.width(), gauge_rect.height() * 1.8) / 2 - 10 # Simple circle, not stretched
         
-        # Draw arc (270 degrees, from -225 to 45 degrees)
-        start_angle = -225 * 16  # QPainter uses 1/16 degrees
-        span_angle = 270 * 16
-
-        # Draw continuous colored arc with better color transitions
-        arcRect = QRect(
+        # Arc parameters in degrees (not 16ths of degrees)
+        start_angle_deg = 225
+        span_angle_deg = -270
+        
+        # Create rect for arc drawing
+        arc_rect = QRect(
             int(center_x - radius), int(center_y - radius),
             int(radius * 2), int(radius * 2)
         )
-
-        # Define colors and positions based on gauge type
+        
+        # Define standard colors
         red = QColor(231, 76, 60)
         yellow = QColor(241, 196, 15)
         green = QColor(46, 204, 113)
-
+        
+        # Draw arcs based on gauge type
+        segments = 90  # More segments = smoother gradient
+        segment_angle = span_angle_deg / segments
+        
         if "Frequency" in self.title or "Voltage" in self.title:
-            # Red → Yellow → Green → Yellow → Red
-            colors = [red, yellow, green, yellow, red]
-            
-            # Draw multiple small arcs to create gradient effect
-            steps = 100  # More steps for smoother gradient
-            angle_per_step = span_angle / steps
-            
-            for i in range(steps):
-                # Calculate position from 0-1
-                pos = i / float(steps - 1)
-                # Calculate angle for this position
-                current_angle = start_angle + int(pos * span_angle)
+            # Draw Red → Yellow → Green → Yellow → Red
+            for i in range(segments):
+                pos = i / (segments - 1.0)
+                angle = start_angle_deg + pos * span_angle_deg
                 
-                # Determine which segment this position falls in
+                # Calculate color based on position
                 if pos < 0.25:
-                    # First segment: Red to Yellow
-                    segment_pos = pos / 0.25
-                    color = self._interpolate_color(red, yellow, segment_pos)
+                    color = self._interpolate_color(red, yellow, pos * 4)
                 elif pos < 0.5:
-                    # Second segment: Yellow to Green
-                    segment_pos = (pos - 0.25) / 0.25
-                    color = self._interpolate_color(yellow, green, segment_pos)
+                    color = self._interpolate_color(yellow, green, (pos - 0.25) * 4)
                 elif pos < 0.75:
-                    # Third segment: Green to Yellow
-                    segment_pos = (pos - 0.5) / 0.25
-                    color = self._interpolate_color(green, yellow, segment_pos)
+                    color = self._interpolate_color(green, yellow, (pos - 0.5) * 4)
                 else:
-                    # Fourth segment: Yellow to Red
-                    segment_pos = (pos - 0.75) / 0.25
-                    color = self._interpolate_color(yellow, red, segment_pos)
+                    color = self._interpolate_color(yellow, red, (pos - 0.75) * 4)
                 
-                # Draw small arc with interpolated color
-                pen = QPen(color, 8)
+                # Draw small arc segment
+                pen = QPen(color, 7)  # Slightly thinner for compact look
+                pen.setCapStyle(Qt.RoundCap)
                 painter.setPen(pen)
-                painter.drawArc(arcRect, current_angle, max(16, int(angle_per_step)))
-                
+                painter.drawArc(arc_rect, int(angle * 16), 
+                                max(16, int(segment_angle * 16)))
+        
         elif "THD" in self.title:
-            # Green → Yellow → Red (gradient)
-            steps = 100
-            angle_per_step = span_angle / steps
-            
-            for i in range(steps):
-                pos = i / float(steps - 1)
-                current_angle = start_angle + int(pos * span_angle)
+            # Draw Green → Yellow → Red
+            for i in range(segments):
+                pos = i / (segments - 1.0)
+                angle = start_angle_deg + pos * span_angle_deg
                 
                 if pos < 0.5:
-                    # Green to Yellow
                     color = self._interpolate_color(green, yellow, pos * 2)
                 else:
-                    # Yellow to Red
                     color = self._interpolate_color(yellow, red, (pos - 0.5) * 2)
                 
-                pen = QPen(color, 8)
+                # Draw arc segment
+                pen = QPen(color, 7)
+                pen.setCapStyle(Qt.RoundCap)
                 painter.setPen(pen)
-                painter.drawArc(arcRect, current_angle, max(16, int(angle_per_step)))
+                painter.drawArc(arc_rect, int(angle * 16), 
+                                max(16, int(segment_angle * 16)))
+        
+        else:  # Current, Power
+            # Draw Yellow → Green
+            for i in range(segments):
+                pos = i / (segments - 1.0)
+                angle = start_angle_deg + pos * span_angle_deg
                 
-        else:  # Current, Reactive Power, Active Power - Yellow → Green
-            # Draw gradient from yellow to green
-            steps = 100
-            angle_per_step = span_angle / steps
-            
-            for i in range(steps):
-                pos = i / float(steps - 1)
-                current_angle = start_angle + int(pos * span_angle)
-                
-                # Interpolate between yellow and green
+                # Simple interpolation from yellow to green
                 color = self._interpolate_color(yellow, green, pos)
                 
-                pen = QPen(color, 8)
+                # Draw arc segment
+                pen = QPen(color, 7)
+                pen.setCapStyle(Qt.RoundCap)
                 painter.setPen(pen)
-                painter.drawArc(arcRect, current_angle, max(16, int(angle_per_step)))
+                painter.drawArc(arc_rect, int(angle * 16), 
+                                max(16, int(segment_angle * 16)))
         
         # Calculate pointer angle
-        angle_range = 270  # 270 degrees
-        value_range = self.max_value - self.min_value
-        angle = -225 + (self.value - self.min_value) / value_range * angle_range
-        
-        # Convert angle to radians
+        normalized_value = (self.value - self.min_value) / (self.max_value - self.min_value)
+        # Ensure normalized value is within bounds
+        normalized_value = max(0.0, min(1.0, normalized_value))
+        angle = start_angle_deg + (span_angle_deg * normalized_value)
         radians = np.radians(angle)
         
-        # Calculate pointer end point
+        # Calculate pointer end point - using the same radius as the arc
         pointer_length = radius * 0.8
         end_x = center_x + pointer_length * np.cos(radians)
         end_y = center_y + pointer_length * np.sin(radians)
         
-        # Draw pointer
-        pen = QPen(QColor(50, 50, 50), 3)
+        # Draw pointer with thinner line for compact display
+        pen = QPen(self.pointer_color, 2)
+        pen.setCapStyle(Qt.RoundCap)
         painter.setPen(pen)
         painter.drawLine(int(center_x), int(center_y), int(end_x), int(end_y))
         
-        # Draw center circle
-        painter.setBrush(QBrush(QColor(50, 50, 50)))
-        painter.drawEllipse(int(center_x - 4), int(center_y - 4), 8, 8)
+        # Draw center circle (smaller)
+        painter.setBrush(QBrush(self.pointer_color))
+        painter.setPen(Qt.NoPen)
+        painter.drawEllipse(int(center_x - 3), int(center_y - 3), 6, 6)
         
-        # Draw min and max labels
-        painter.setPen(QColor(0, 0, 0))
+        # Draw min and max labels with slightly smaller font
+        painter.setPen(self.text_color)
         font = painter.font()
-        font.setPointSize(8)
+        font.setPointSize(10)
         font.setBold(True)
         painter.setFont(font)
         
-        # Min value text
-        min_x = center_x + radius * 0.9 * np.cos(np.radians(-225))
-        min_y = center_y + radius * 0.9 * np.sin(np.radians(-225))
-        painter.drawText(int(min_x - 15), int(min_y + 8), 
-                        f"{self.min_value}")
-        
-        # Max value text
-        max_x = center_x + radius * 0.9 * np.cos(np.radians(45))
-        max_y = center_y + radius * 0.9 * np.sin(np.radians(45))
-        painter.drawText(int(max_x), int(max_y), 
-                        f"{self.max_value}")
+        # Min value at start angle (225°)
+        min_x = center_x + radius * 0.95 * np.cos(np.radians(start_angle_deg))
+        min_y = center_y + radius * 0.95 * np.sin(np.radians(start_angle_deg))
+        # For start angle (225°), we need to offset to the left and slightly below
+        min_text = QRect(int(min_x - 23), int(min_y+60), 40, 20)
+        painter.drawText(min_text, Qt.AlignCenter, f"{self.min_value}")
+
+        # Max value at end angle (225° - 270° = -45°)
+        max_x = center_x + radius * 0.95 * np.cos(np.radians(start_angle_deg + span_angle_deg))
+        max_y = center_y + radius * 0.95 * np.sin(np.radians(start_angle_deg + span_angle_deg))
+        # For end angle (-45°), we need to offset to the right and slightly below
+        max_text = QRect(int(max_x - 23), int(max_y+60), 40, 20)
+        painter.drawText(max_text, Qt.AlignCenter, f"{self.max_value}")
         
 class GaugeGridWidget(QFrame):
     """
@@ -624,7 +610,9 @@ class GaugeGridWidget(QFrame):
             # Use a grid layout to arrange gauges in rows and columns
             self.layout = QGridLayout(self)
             self.layout.setContentsMargins(0, 0, 0, 0)  # title margin
-            self.layout.setSpacing(10)  # Space between gauges
+            # Set different horizontal and vertical spacing
+            self.layout.setHorizontalSpacing(5)  # Reduced horizontal spacing (make gauges closer side-by-side)
+            self.layout.setVerticalSpacing(20)  # Keep increased vertical spacing
             
             # Add a title at the top of the gauge grid
             self.title_label = QLabel("System Measurements")
@@ -660,8 +648,8 @@ class GaugeGridWidget(QFrame):
         gauge.mousePressEvent = lambda e: None
         gauge.mouseReleaseEvent = lambda e: None
         
-        # Add gauge to layout
-        self.layout.addWidget(gauge, row, col)
+        # Add gauge to layout with alignment for better positioning
+        self.layout.addWidget(gauge, row, col, Qt.AlignCenter)
         
         # Store reference to gauge
         self.gauges.append(gauge)
@@ -718,6 +706,7 @@ class TableWidget(FixedWidget):  # Assuming you changed from DraggableWidget to 
                 gridline-color: #D0D0D0;
                 background-color: white;
                 font-size: 15px;  /* 10px as requested */
+                font-weight: bold;
             }
             QTableWidget::item {
                 padding: 0px;
@@ -778,6 +767,7 @@ class TableWidget(FixedWidget):  # Assuming you changed from DraggableWidget to 
             padding: 2px; 
             margin: 1px; 
             font-size: 15px;
+            font-weight: bold;
             background-color: #F8F8F8;
             border: 1px solid #CCCCCC;
         """)
@@ -1416,12 +1406,12 @@ class EnergyHubWidget(FixedWidget):
     def update_ev_soc(self, soc):
         """Update EV state of charge display"""
         self.ev_soc = soc
-        self.ev_soc_label.setText(f"EV SoC: {soc:.1f}%")
+        self.ev_soc_label.setText(f"EV SoC: {soc:.2f}%")
     
     def update_battery_soc(self, soc):
         """Update battery state of charge display"""
         self.battery_soc = soc
-        self.battery_soc_label.setText(f"Battery SoC: {soc:.1f}%")
+        self.battery_soc_label.setText(f"Battery SoC: {soc:.2f}%")
     
     def update_all_statuses(self):
         """Update all status indicators to current values"""

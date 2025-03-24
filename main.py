@@ -289,10 +289,10 @@ class EVChargingMonitor(QMainWindow):
         # Define gauge configurations - these determine the properties of each gauge
         gauge_configs = [
             {"title": "Frequency", "min": 49, "max": 51, "units": "Hz", "id": "frequency_gauge"},
-            {"title": "Voltage RMS", "min": 0, "max": 200, "units": "V", "id": "voltage_gauge"},
+            {"title": "Voltage RMS", "min": 0, "max": 240, "units": "V", "id": "voltage_gauge"},
             {"title": "THD", "min": 0, "max": 10, "units": "%", "id": "thd_gauge"},
             {"title": "Active Power", "min": 0, "max": 4000, "units": "W", "id": "active_power_gauge"},
-            {"title": "Reactive Power", "min": 0, "max": 300, "units": "VAr", "id": "reactive_power_gauge"},
+            {"title": "Reactive Power", "min": 0, "max": 2000, "units": "VAr", "id": "reactive_power_gauge"},
             {"title": "Current RMS", "min": 0, "max": 20, "units": "A", "id": "current_gauge"}
         ]
         
