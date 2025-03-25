@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QSize, QRect
 import pyqtgraph as pg
 import numpy as np
-from PyQt5.QtGui import QColor, QPainter, QPen, QBrush, QFont, QMovie, QPixmap
+from PyQt5.QtGui import QColor, QPainter, QPen, QBrush, QFont, QMovie, QPixmap, QIcon
 from keypad import NumericKeypad
 from pg_gauge import PyQtGraphGauge
 
@@ -35,20 +35,33 @@ class ColorLabel(QLabel):
     """
     Custom label with colored line indicator for graph legends.
     Displays a small colored line followed by text.
+    Clicking toggles visibility of associated plot line.
     """
-    def __init__(self, text, color, parent=None):
+
+    # Signal to emit when clicked, passing the index of this label and new visibility state
+    visibility_toggled = pyqtSignal(int, bool)
+
+    def __init__(self, text, color, index=0, parent=None):
         super().__init__(text, parent)
+        
         self.color = color
+        self.index = index  # Store index to identify which line this label controls
+        self.visible = True  # Track visibility state
+        self.inactive_color = (128, 128, 128)  # Gray color for inactive state
+
         # Add some margins to better separate the color indicator from text
         self.setContentsMargins(15, 0, 5, 0)
     
+        # Set cursor to indicate it's clickable
+        self.setCursor(Qt.PointingHandCursor)
+
     def paintEvent(self, event):
         # Custom paint event to draw colored line indicator
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         
-        # Draw color line indicator - this creates the colored line before the text
-        pen = QPen(QColor(*self.color))
+        # Draw color line indicator - with active or inactive color
+        pen = QPen(QColor(*self.color if self.visible else self.inactive_color))
         pen.setWidth(4)  # Line thickness - increase for thicker indicator
         painter.setPen(pen)
         # Draw horizontal line at vertical center of label
@@ -56,7 +69,21 @@ class ColorLabel(QLabel):
         
         # Draw text (parent's paint event)
         super().paintEvent(event)
-
+    
+    def mousePressEvent(self, event):
+        """Handle mouse press to toggle visibility"""
+        if event.button() == Qt.LeftButton:
+            # Toggle visibility state
+            self.visible = not self.visible
+            
+            # Update appearance
+            self.update()
+            
+            # Emit signal with index and new visibility state
+            self.visibility_toggled.emit(self.index, self.visible)
+            
+        # Call the parent class implementation
+        super().mousePressEvent(event)
 
 class GraphWidget(FixedWidget):
     """
@@ -73,7 +100,16 @@ class GraphWidget(FixedWidget):
         # Main layout - Contains header (title+legend) and plot
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)  # Adjust widget margins here
+
+        # Add paused state tracking
+        self.is_paused = False
         
+        # Store the last data received when paused
+        self.last_data = {
+            'time': None,
+            'values': []  # Will hold lists of values for each line
+        }
+
         #----------------------------------------
         # Header Section (Title + Legend)
         #----------------------------------------
@@ -145,6 +181,14 @@ class GraphWidget(FixedWidget):
                        (0, 0, 255),    # Blue
                        (0, 200, 0),    # Green
                        (150, 150, 0)]  # Yellow-ish
+
+    def pause_graph(self):
+        """Pause the graph updates"""
+        self.is_paused = True
+    
+    def resume_graph(self):
+        """Resume the graph updates"""
+        self.is_paused = False
     
     def setup_voltage_graph(self):
         """
@@ -172,23 +216,32 @@ class GraphWidget(FixedWidget):
         # Clear existing plot lines
         self.plot_widget.clear()
         self.lines = []
-        
+        # Track line visibility state
+        self.line_visibility = []
+
         # Add custom legend labels for voltage phases
         phase_names = ['Vg,a', 'Vg,b', 'Vg,c']
+        legend_items = []
         for i, name in enumerate(phase_names):
-            legend_item = ColorLabel(name, self.colors[i])
+            # Create legend with index i
+            legend_item = ColorLabel(name, self.colors[i], i)
             # This line controls the legend item text style and size
-            legend_item.setStyleSheet("font-weight: bold; color: black; font-size: 16px;")  # <-- CHANGE LEGEND SIZE HERE
+            legend_item.setStyleSheet("font-weight: bold; color: black; font-size: 16px;")
+            # Connect toggle signal to our handler
+            legend_item.visibility_toggled.connect(self.toggle_line_visibility)
             self.legend_layout.addWidget(legend_item)
+            legend_items.append(legend_item)
         
         # Add plot lines for each phase
         for i in range(len(phase_names)):
             # Create a pen with the appropriate color and width
-            pen = pg.mkPen(color=self.colors[i], width=2)  # <-- CHANGE LINE THICKNESS HERE
+            pen = pg.mkPen(color=self.colors[i], width=2)
             # Add an empty line series to the plot
             line = self.plot_widget.plot([], [], pen=pen)
             # Store reference to the line for later data updates
             self.lines.append(line)
+            # All lines visible initially
+            self.line_visibility.append(True)
     
     def setup_current_graph(self):
         """
@@ -216,20 +269,28 @@ class GraphWidget(FixedWidget):
         # Clear existing plot lines
         self.plot_widget.clear()
         self.lines = []
-        
+        # Track line visibility state
+        self.line_visibility = []
+
         # Add custom legend labels for current phases
         phase_names = ['Ig,a', 'Ig,b', 'Ig,c']
+        legend_items = []
         for i, name in enumerate(phase_names):
-            legend_item = ColorLabel(name, self.colors[i])
+            legend_item = ColorLabel(name, self.colors[i], i)
             # Legend style and size
             legend_item.setStyleSheet("font-weight: bold; color: black; font-size: 16px;")  # <-- CHANGE LEGEND SIZE HERE
+            legend_item.visibility_toggled.connect(self.toggle_line_visibility)
             self.legend_layout.addWidget(legend_item)
-        
+            legend_items.append(legend_item)
+
         # Add plot lines for each phase
         for i in range(len(phase_names)):
             pen = pg.mkPen(color=self.colors[i], width=2)
             line = self.plot_widget.plot([], [], pen=pen)
+            # Store reference to the line for later data updates
             self.lines.append(line)
+            # All lines visible initially
+            self.line_visibility.append(True)
     
     def setup_power_graph(self):
         """
@@ -248,7 +309,7 @@ class GraphWidget(FixedWidget):
         time_axis.setLabel("Time", units="s", **{'font-size': '10pt', 'font-weight': 'bold'})
         self.plot_widget.setYRange(-5000, 3000)  # Set Y-axis limits for power
         
-        # Clear any existing legend items
+        # Clear any existing legend items from previous configurations
         for i in reversed(range(self.legend_layout.count())): 
             widget = self.legend_layout.itemAt(i).widget()
             if widget:
@@ -257,45 +318,123 @@ class GraphWidget(FixedWidget):
         # Clear existing plot lines
         self.plot_widget.clear()
         self.lines = []
-        
+        self.line_visibility = []
+
         # Add custom legend labels for power sources
         power_names = ['P_grid', 'P_pv', 'P_ev', 'P_battery']
+        legend_items = []
         for i, name in enumerate(power_names):
-            legend_item = ColorLabel(name, self.colors[i])
+            legend_item = ColorLabel(name, self.colors[i], i)
             # Legend style and size
             legend_item.setStyleSheet("font-weight: bold; color: black; font-size: 16px;")  # <-- CHANGE LEGEND SIZE HERE
+            legend_item.visibility_toggled.connect(self.toggle_line_visibility)
             self.legend_layout.addWidget(legend_item)
+            legend_items.append(legend_item)
         
         # Add plot lines for each power source
         for i in range(len(power_names)):
             pen = pg.mkPen(color=self.colors[i], width=2)
             line = self.plot_widget.plot([], [], pen=pen)
             self.lines.append(line)
+            self.line_visibility.append(True)
     
     def update_voltage_data(self, time_data, va_data, vb_data, vc_data):
         """Update the voltage graph with new data"""
+        # Store the latest data regardless of pause state
+        values = [va_data, vb_data, vc_data]
+        self.last_data['time'] = time_data
+        self.last_data['values'] = values
+        
+        # If paused, don't update the graph
+        if self.is_paused:
+            return
+        
         # Check if lines have been initialized
         if len(self.lines) >= 3:
-            self.lines[0].setData(time_data, va_data)
-            self.lines[1].setData(time_data, vb_data)
-            self.lines[2].setData(time_data, vc_data)
+            # Update only visible lines
+            for i, line in enumerate(self.lines[:3]):
+                if self.line_visibility[i]:
+                    line.setData(time_data, values[i])
     
     def update_current_data(self, time_data, ia_data, ib_data, ic_data):
         """Update the current graph with new data"""
+        # Store the latest data regardless of pause state
+        values = [ia_data, ib_data, ic_data]
+        self.last_data['time'] = time_data
+        self.last_data['values'] = values
+        
+        # If paused, don't update the graph
+        if self.is_paused:
+            return
+        
         # Check if lines have been initialized
         if len(self.lines) >= 3:
-            self.lines[0].setData(time_data, ia_data)
-            self.lines[1].setData(time_data, ib_data)
-            self.lines[2].setData(time_data, ic_data)
-    
+            # Update only visible lines
+            for i, line in enumerate(self.lines[:3]):
+                if self.line_visibility[i]:
+                    line.setData(time_data, values[i])
+                else:
+                    line.setData([], [])
+
     def update_power_data(self, time_data, p_grid, p_pv, p_ev, p_battery):
         """Update the power graph with new data"""
+        # Store the latest data regardless of pause state
+        values = [p_grid, p_pv, p_ev, p_battery]
+        self.last_data['time'] = time_data
+        self.last_data['values'] = values
+        
+        # If paused, don't update the graph
+        if self.is_paused:
+            return
+        
+        # Check if lines have been initialized
+        if len(self.lines) >= 4:
+            # Update only visible lines
+            for i, line in enumerate(self.lines[:4]):
+                if self.line_visibility[i]:
+                    line.setData(time_data, values[i])
+                else:
+                    line.setData([], [])
+
         # Check if lines have been initialized
         if len(self.lines) >= 4:
             self.lines[0].setData(time_data, p_grid)
             self.lines[1].setData(time_data, p_pv)
             self.lines[2].setData(time_data, p_ev)
             self.lines[3].setData(time_data, p_battery)
+
+    def toggle_line_visibility(self, index, visible):
+        """
+        Toggle the visibility of a plot line
+        
+        Args:
+            index (int): The index of the line to toggle
+            visible (bool): The new visibility state
+        """
+        # Make sure we have valid indices
+        if index < 0 or index >= len(self.lines):
+            return
+        
+        # Store the visibility state
+        self.line_visibility[index] = visible
+        
+        # If the graph is paused, we need to handle it differently
+        if self.is_paused:
+            # When paused, we need to update the current view without new data
+            if visible:
+                # Make line visible again with last known data
+                if (self.last_data['time'] is not None and 
+                    self.last_data['values'] and 
+                    index < len(self.last_data['values'])):
+                    self.lines[index].setData(self.last_data['time'], self.last_data['values'][index])
+            else:
+                # Hide the line by setting it to empty data
+                self.lines[index].setData([], [])
+        else:
+            # When not paused, visibility is handled in the next update
+            if not visible:
+                # Hide immediately by setting to empty data
+                self.lines[index].setData([], [])
         
 class GaugeGridWidget(QFrame):
     """

@@ -5,9 +5,9 @@ import sys
 import time
 import numpy as np
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, 
-                            QVBoxLayout, QHBoxLayout, QPushButton, QTabWidget, QTextBrowser, QLabel)
+                            QVBoxLayout, QHBoxLayout, QPushButton, QTabWidget, QTextBrowser, QLabel, QToolButton)
 from PyQt5.QtCore import QTimer, Qt
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtGui import QMovie
 from PyQt5.QtCore import QSize
 import argparse
@@ -165,22 +165,55 @@ class EVChargingMonitor(QMainWindow):
         self.setup_energy_hub()
 
         # Create fullscreen toggle button in top-right corner
-        self.fs_button = QPushButton("⛶", self)  # Unicode fullscreen symbol
-        self.fs_button.setToolTip("Toggle Fullscreen")
+        self.fs_button = QPushButton(self)
+        self.fs_button.setIcon(QIcon("imgs/full.png"))
+        self.fs_button.setIconSize(QSize(50, 50))  # Adjust size as needed
+        self.fs_button.setFixedSize(50, 50)  # Make the button itself a reasonable size
+        self.fs_button.setToolTip("Toggle Fullscreen")  # Add tooltip since there's no text
         self.fs_button.setGeometry(250, 100, 50, 50)  # Position in top-right
-        self.fs_button.setStyleSheet("""
-            QPushButton {
-                background-color: rgba(40, 40, 40, 120); 
-                color: white;
-                border-radius: 25px;
-                font-size: 24px;
-            }
-            QPushButton:hover {
-                background-color: rgba(60, 60, 60, 180);
-            }
-        """)
         self.fs_button.clicked.connect(self.toggle_fullscreen)
         self.fs_button.raise_()  # Bring to front
+
+        # Create pause/play button with toggle functionality
+        self.graph_control_button = QToolButton(self.central_widget)
+        self.graph_control_button.setIcon(QIcon("imgs/pause.png"))
+        self.graph_control_button.setIconSize(QSize(50, 50))
+        self.graph_control_button.setFixedSize(50, 50)
+        self.graph_control_button.setToolTip("Pause/Resume All Graphs")
+        self.graph_control_button.setCursor(Qt.PointingHandCursor)
+        self.graph_control_button.setCheckable(True)
+        self.graph_control_button.toggled.connect(self.toggle_graphs_pause)
+        self.graph_control_button.setGeometry(310, 67, 50, 50)  # Position in top right area
+        
+        # Track paused state
+        self.graphs_paused = False
+
+    def toggle_graphs_pause(self, checked):
+        """Toggle pause/resume state of all graphs"""
+        self.graphs_paused = checked
+        
+        # Update button icon
+        icon = QIcon("imgs/play.png" if checked else "imgs/pause.png")
+        self.graph_control_button.setIcon(icon)
+        
+        # Update all graphs
+        if hasattr(self, 'voltage_graph'):
+            if checked:
+                self.voltage_graph.pause_graph()
+            else:
+                self.voltage_graph.resume_graph()
+            
+        if hasattr(self, 'current_graph'):
+            if checked:
+                self.current_graph.pause_graph()
+            else:
+                self.current_graph.resume_graph()
+            
+        if hasattr(self, 'power_graph'):
+            if checked:
+                self.power_graph.pause_graph()
+            else:
+                self.power_graph.resume_graph()
     
     def setup_about_tab(self):
         """Set up the About tab with project information"""
