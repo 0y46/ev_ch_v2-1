@@ -954,6 +954,10 @@ class EnergyHubWidget(FixedWidget):
         self.hub_layout.setSpacing(0)  # Add some space between cells
         self.hub_layout.setContentsMargins(0, 0, 0, 0)  # Add margins around the grid
         
+        # Load the AC and DC line images
+        self.images['ac_line'] = QPixmap("imgs/AC-line.png")
+        self.images['dc_line'] = QPixmap("imgs/DC-line.png")
+        
         # 2. Set up components - order matters for z-ordering
         # Place background components first, status indicators last
         
@@ -964,6 +968,35 @@ class EnergyHubWidget(FixedWidget):
         self.transformer_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.hub_layout.addWidget(self.transformer_label, 1, 9, 2, 6)
         
+        # Add connection lines BEFORE adding components
+        # PV to Transformer (DC line)
+        self.pv_line = QLabel()
+        self.pv_line.setPixmap(self.images['dc_line'].scaled(200, 20, Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
+        self.pv_line.setAlignment(Qt.AlignVCenter)
+        self.pv_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.hub_layout.addWidget(self.pv_line, 1, 4, 1, 5)
+
+        # EV to Transformer (DC line)
+        self.ev_line = QLabel()
+        self.ev_line.setPixmap(self.images['dc_line'].scaled(200, 20, Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
+        self.ev_line.setAlignment(Qt.AlignVCenter)
+        self.ev_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.hub_layout.addWidget(self.ev_line, 2, 4, 1, 5)
+        
+        # Transformer to Grid (AC line)
+        self.grid_line = QLabel()
+        self.grid_line.setPixmap(self.images['ac_line'].scaled(200, 30, Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
+        self.grid_line.setAlignment(Qt.AlignVCenter)
+        self.grid_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.hub_layout.addWidget(self.grid_line, 1, 15, 1, 5)
+        
+        # Transformer to Battery (DC line)
+        self.battery_line = QLabel()
+        self.battery_line.setPixmap(self.images['dc_line'].scaled(200, 20, Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
+        self.battery_line.setAlignment(Qt.AlignVCenter)
+        self.battery_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.hub_layout.addWidget(self.battery_line, 2, 15, 1, 5)
+
         # 3. Component images - add these BEFORE status indicators
         
         # Left side - PV Panel
@@ -1002,7 +1035,7 @@ class EnergyHubWidget(FixedWidget):
         self.pv_status_label.setAlignment(Qt.AlignCenter)
         self.pv_status_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.pv_status_label.setMinimumSize(80, 80)
-        self.hub_layout.addWidget(self.pv_status_label, 1, 4, 1, 2)
+        self.hub_layout.addWidget(self.pv_status_label, 1, 6, 1, 2)
         # Raise to front
         self.pv_status_label.raise_()
         
@@ -1011,7 +1044,7 @@ class EnergyHubWidget(FixedWidget):
         self.ev_status_label.setAlignment(Qt.AlignCenter)
         self.ev_status_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.ev_status_label.setMinimumSize(80, 80)
-        self.hub_layout.addWidget(self.ev_status_label, 2, 4, 1, 2)
+        self.hub_layout.addWidget(self.ev_status_label, 2, 6, 1, 2)
         # Raise to front
         self.ev_status_label.raise_()
         
@@ -1020,7 +1053,7 @@ class EnergyHubWidget(FixedWidget):
         self.grid_status_label.setAlignment(Qt.AlignCenter)
         self.grid_status_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.grid_status_label.setMinimumSize(80, 80)
-        self.hub_layout.addWidget(self.grid_status_label, 1, 17, 1, 2)
+        self.hub_layout.addWidget(self.grid_status_label, 1, 16, 1, 2)
         # Raise to front
         self.grid_status_label.raise_()
         
@@ -1029,7 +1062,7 @@ class EnergyHubWidget(FixedWidget):
         self.battery_status_label.setAlignment(Qt.AlignCenter)
         self.battery_status_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.battery_status_label.setMinimumSize(80, 80)
-        self.hub_layout.addWidget(self.battery_status_label, 2, 17, 1, 2)
+        self.hub_layout.addWidget(self.battery_status_label, 2, 16, 1, 2)
         # Raise to front
         self.battery_status_label.raise_()
         
