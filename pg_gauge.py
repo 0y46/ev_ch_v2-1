@@ -31,10 +31,9 @@ class PyQtGraphGauge(QWidget):
         
         # Set up layout
         layout = QVBoxLayout()
-        layout.setContentsMargins(25, 0, 25, 0)  # Small margins
+        layout.setContentsMargins(18, 0, 18, 0)  # Small margins
         layout.setSpacing(0)  # Minimal spacing
         self.setLayout(layout)
-        
         # Add title label
         self.title_label = QLabel(title)
         self.title_label.setAlignment(Qt.AlignCenter)
@@ -75,12 +74,11 @@ class PyQtGraphGauge(QWidget):
         self.plot_widget.clear()
         
         # Set fixed range for consistent display
-        self.plot_widget.setXRange(-1.2, 1.2)
-        self.plot_widget.setYRange(-1.2, 1.2)
+        self.plot_widget.setXRange(-1.3, 1.3)
+        self.plot_widget.setYRange(-1.1, 1.1)  # Adjusted for 180-degree arc # Shifted up by changing from -0.2 to -0.1
         
-        # Create arc for gauge background (225° to -45°, counterclockwise)
-        # Arc is drawn with 100 points for smoothness
-        theta = np.linspace(225 * np.pi/180, -45 * np.pi/180, 100)
+        # Create arc for gauge background (180° to 0°, half circle)
+        theta = np.linspace(180 * np.pi/180, 0 * np.pi/180, 100)
         x = np.cos(theta)
         y = np.sin(theta)
         
@@ -100,13 +98,14 @@ class PyQtGraphGauge(QWidget):
         dot_y = center_y + dot_radius * np.sin(theta)
         self.plot_widget.plot(dot_x, dot_y, pen=None, fillLevel=0, brush=pg.mkBrush('black'))
         
-        # Add min/max labels
-        min_text = pg.TextItem(text=str(self.min_value), color='black', anchor=(0.5, 0))
-        min_text.setPos(np.cos(225 * np.pi/180) * 0.9, np.sin(225 * np.pi/180) * 0.75)
+        # Add min/max labels - adjusted position for 180-degree gauge - move them inward to prevent cutting off
+        min_text = pg.TextItem(text=str(self.min_value), color='black', anchor=(0.5, 0.5))
+        min_text.setPos(np.cos(180 * np.pi/180) * 0.8, np.sin(180 * np.pi/180) * 0.8 - 0.35)
         self.plot_widget.addItem(min_text)
         
-        max_text = pg.TextItem(text=str(self.max_value), color='black', anchor=(0.5, 0))
-        max_text.setPos(np.cos(-45 * np.pi/180) * 0.9, np.sin(-45 * np.pi/180) * 0.75)
+        #moving max min left or right (shift)
+        max_text = pg.TextItem(text=str(self.max_value), color='black', anchor=(0.5, 0.5))
+        max_text.setPos(np.cos(0 * np.pi/180) * 0.8, np.sin(0 * np.pi/180) * 0.8 - 0.35)
         self.plot_widget.addItem(max_text)
     
     def _configure_colors(self):
@@ -131,7 +130,7 @@ class PyQtGraphGauge(QWidget):
                     b = int(red[2] + pos * 4 * (yellow[2] - red[2]))
                 elif pos < 0.5:
                     # Yellow to green
-                    p = (pos - 0.25) * 4
+                    p = (pos - 0.32) * 4
                     r = int(yellow[0] + p * (green[0] - yellow[0]))
                     g = int(yellow[1] + p * (green[1] - yellow[1]))
                     b = int(yellow[2] + p * (green[2] - yellow[2]))
@@ -150,7 +149,7 @@ class PyQtGraphGauge(QWidget):
                 colors.append(pg.mkColor(r, g, b))
             
             # Draw multiple segments with different colors
-            theta = np.linspace(225 * np.pi/180, -45 * np.pi/180, segments)
+            theta = np.linspace(180 * np.pi/180, 0 * np.pi/180, segments)
             for i in range(segments - 1):
                 segment_pen = pg.mkPen(colors[i], width=10)
                 segment_x = [np.cos(theta[i]), np.cos(theta[i+1])]
@@ -178,7 +177,7 @@ class PyQtGraphGauge(QWidget):
                 colors.append(pg.mkColor(r, g, b))
             
             # Draw multiple segments with different colors
-            theta = np.linspace(225 * np.pi/180, -45 * np.pi/180, segments)
+            theta = np.linspace(180 * np.pi/180, 0 * np.pi/180, segments)
             for i in range(segments - 1):
                 segment_pen = pg.mkPen(colors[i], width=10)
                 segment_x = [np.cos(theta[i]), np.cos(theta[i+1])]
@@ -197,7 +196,7 @@ class PyQtGraphGauge(QWidget):
                 colors.append(pg.mkColor(r, g, b))
             
             # Draw multiple segments with different colors
-            theta = np.linspace(225 * np.pi/180, -45 * np.pi/180, segments)
+            theta = np.linspace(180 * np.pi/180, 0 * np.pi/180, segments)
             for i in range(segments - 1):
                 segment_pen = pg.mkPen(colors[i], width=10)
                 segment_x = [np.cos(theta[i]), np.cos(theta[i+1])]
@@ -224,8 +223,8 @@ class PyQtGraphGauge(QWidget):
         # Calculate normalized position using clamped value (for pointer)
         normalized = (clamped_value - self.min_value) / (self.max_value - self.min_value)
         
-        # Calculate angle in radians (225° to -45°)
-        angle_deg = 225 - normalized * 270
+        # Calculate angle in radians (180° to 0°) - MODIFIED FOR 180 DEGREE GAUGE
+        angle_deg = 180 - normalized * 180
         angle_rad = angle_deg * np.pi / 180
         
         # Update pointer position using trigonometry

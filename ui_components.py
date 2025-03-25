@@ -675,7 +675,6 @@ class TableWidget(FixedWidget):  # Assuming you changed from DraggableWidget to 
         """Configure table for Grid Settings"""
         self.title_label.setText("Grid Settings")
         self.table_type = "grid_settings"
-        
         # Define parameters
         parameters = [
             {"name": "Vg_rms", "type": "number", "default": 155},
