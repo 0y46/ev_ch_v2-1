@@ -463,10 +463,10 @@ class DataSimulator:
         else:
             # Use consistent SoC values from stored parameters
             return {
-                "s1_status": random.randint(0, 2),
-                "s2_status": random.randint(0, 2),
-                "s3_status": random.randint(0, 2),
-                "s4_status": random.randint(0, 2),
+                "s1_status": random.randint(0, 0),
+                "s2_status": random.randint(2, 2),
+                "s3_status": random.randint(1, 1),
+                "s4_status": random.randint(3, 3),
                 "ev_soc": self.ev_soc,  # Use exact same stored value
                 "battery_soc": self.battery_soc  # Use exact same stored value
             }
