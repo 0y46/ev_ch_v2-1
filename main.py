@@ -5,11 +5,9 @@ import sys
 import time
 import numpy as np
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, 
-                            QVBoxLayout, QHBoxLayout, QPushButton, QTabWidget, QTextBrowser, QLabel, QToolButton)
-from PyQt5.QtCore import QTimer, Qt
+                            QVBoxLayout, QHBoxLayout, QPushButton, QTabWidget, QTextBrowser, QLabel, QToolButton, QFrame)
+from PyQt5.QtCore import QTimer, Qt, QSize
 from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtGui import QMovie
-from PyQt5.QtCore import QSize
 import argparse
 
 # Import custom modules
@@ -150,7 +148,36 @@ class EVChargingMonitor(QMainWindow):
         self.setup_tables()
         self.setup_gauges()
         self.setup_control_buttons()
-        
+                
+        # Create timestamp display widget above the control buttons
+        # -----------------------------------------------------
+        # Create a frame with a border for the timestamp
+        self.timestamp_frame = QFrame(self.central_widget)
+        self.timestamp_frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
+        self.timestamp_frame.setLineWidth(2)
+        self.timestamp_frame.setGeometry(0, 32, 240, 30)
+        self.timestamp_frame.setStyleSheet('background-color: #90D5FF')
+
+        # Create the timestamp label with tight margins
+        self.timestamp_label = QLabel(self.timestamp_frame)
+        self.timestamp_label.setStyleSheet(
+            "font-weight: bold; color: #333333; font-size: 14px; padding: 2px;"
+        )
+        self.timestamp_label.setAlignment(Qt.AlignCenter)
+        self.timestamp_label.setContentsMargins(0, 0, 0, 0)  # Very small margins
+
+        # Initial size, will be updated with text content
+        self.timestamp_label.setGeometry(2, 2, 236, 26)  # Tight within frame
+
+        # Update the timestamp immediately
+        self.update_timestamp()
+
+        # Create timer to update timestamp every second
+        self.timestamp_timer = QTimer(self)
+        self.timestamp_timer.timeout.connect(self.update_timestamp)
+        self.timestamp_timer.start(1000)  # Update every 1000ms (1 second)
+        # -----------------------------------------------------
+
         # Add the QEERI logo to the monitoring tab
         self.logo_label = QLabel(self.central_widget)
         self.logo_label.setGeometry(1611, 20, 300, 100)  # Large logo size
@@ -371,6 +398,32 @@ class EVChargingMonitor(QMainWindow):
         self.energy_hub = EnergyHubWidget(self.central_widget, "energy_hub")
         self.energy_hub.show()
         self.widgets["energy_hub"] = self.energy_hub
+
+    
+    def update_timestamp(self):
+        """
+        Updates the timestamp label with current date and time.
+        Format: YYYY-MM-DD HH:MM:SS
+        
+        This shows the current system time, updating every second.
+        """
+        # Get current time in YYYY-MM-DD HH:MM:SS format
+        current_time = time.strftime("%Y-%m-%d %H:%M:%S")
+        text = f"{current_time}"
+        self.timestamp_label.setText(text)
+        
+        # Option for tighter frame around text:
+        # Calculate text width and resize frame if needed
+        fm = self.timestamp_label.fontMetrics()
+        text_width = fm.width(text) + 20  # Add some padding
+        
+        # Don't make it smaller than minimum width
+        frame_width = max(140, min(240, text_width))  # Between 140-240px
+        
+        # Center the frame
+        #x_pos = max(0, (240 - frame_width) // 2)
+        self.timestamp_frame.setGeometry(2, 36, frame_width, 30)
+        self.timestamp_label.setGeometry(2, 2, frame_width - 4, 26)
 
     def update_data(self):
         """Update all UI components with new data from the simulator or real hardware"""
@@ -615,6 +668,11 @@ class EVChargingMonitor(QMainWindow):
         """Handle window close event with graceful shutdown of all components"""
         print("Starting application shutdown sequence...")
         
+        # Stop the timestamp timer
+        if hasattr(self, 'timestamp_timer') and self.timestamp_timer.isActive():
+            print("Stopping timestamp timer...")
+            self.timestamp_timer.stop()
+
         # Stop logging if active
         if self.data_logger.is_logging:
             print("Stopping data logger...")
