@@ -545,7 +545,7 @@ class UnifiedUDPHandler:
             
         return self.last_responses.get(address)
     
-    def filter_by_time_window(self, time_data, *data_series, time_window=1):
+    def filter_by_time_window(self, time_data, *data_series, time_window=DEFAULT_TIME_WINDOW):
         """
         Filter data to only include points within the specified time window from the most recent point.
         Enhanced with race condition protection.

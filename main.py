@@ -454,7 +454,6 @@ class EVChargingMonitor(QMainWindow):
         time_data, p_grid, p_pv, p_ev, p_battery = self.unified_udp.get_power_data(time_window=DEFAULT_TIME_WINDOW)
         self.power_graph.update_power_data(time_data, p_grid, p_pv, p_ev, p_battery)
         
-        # UPDATE TABLES - THIS IS THE NEW PART
         # Create table data structures from latest_data
         table_data = {
             "grid_settings": {

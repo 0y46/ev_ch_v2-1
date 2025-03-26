@@ -180,7 +180,7 @@ class GraphWidget(FixedWidget):
         self.colors = [(255, 0, 0),    # Red
                        (0, 0, 255),    # Blue
                        (0, 200, 0),    # Green
-                       (150, 150, 0)]  # Yellow-ish
+                       (0, 0, 0)]  # Yellow-ish
 
     def pause_graph(self):
         """Pause the graph updates"""
@@ -395,13 +395,6 @@ class GraphWidget(FixedWidget):
                     line.setData(time_data, values[i])
                 else:
                     line.setData([], [])
-
-        # Check if lines have been initialized
-        if len(self.lines) >= 4:
-            self.lines[0].setData(time_data, p_grid)
-            self.lines[1].setData(time_data, p_pv)
-            self.lines[2].setData(time_data, p_ev)
-            self.lines[3].setData(time_data, p_battery)
 
     def toggle_line_visibility(self, index, visible):
         """
