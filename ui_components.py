@@ -207,6 +207,9 @@ class GraphWidget(FixedWidget):
         time_axis.setLabel("Time", units="s", **{'font-size': '10pt', 'font-weight': 'bold'})
         self.plot_widget.setYRange(-250, 250)  # Set Y-axis limits
         
+        self.plot_widget.getViewBox().enableAutoRange(axis='x')
+        self.plot_widget.getViewBox().enableAutoRange(axis='y')
+
         # Clear any existing legend items from previous configurations
         for i in reversed(range(self.legend_layout.count())): 
             widget = self.legend_layout.itemAt(i).widget()
@@ -260,6 +263,9 @@ class GraphWidget(FixedWidget):
         time_axis.setLabel("Time", units="s", **{'font-size': '10pt', 'font-weight': 'bold'})
         self.plot_widget.setYRange(-10, 10)  # Set Y-axis limits for current
         
+        self.plot_widget.getViewBox().enableAutoRange(axis='x')
+        self.plot_widget.getViewBox().enableAutoRange(axis='y')
+
         # Clear any existing legend items
         for i in reversed(range(self.legend_layout.count())): 
             widget = self.legend_layout.itemAt(i).widget()
@@ -309,6 +315,10 @@ class GraphWidget(FixedWidget):
         time_axis.setLabel("Time", units="s", **{'font-size': '10pt', 'font-weight': 'bold'})
         self.plot_widget.setYRange(-5000, 3000)  # Set Y-axis limits for power
         
+        # Enable auto-range by default (this makes the "A" button appear pressed)
+        self.plot_widget.getViewBox().enableAutoRange(axis='x')
+        self.plot_widget.getViewBox().enableAutoRange(axis='y')
+
         # Clear any existing legend items from previous configurations
         for i in reversed(range(self.legend_layout.count())): 
             widget = self.legend_layout.itemAt(i).widget()
@@ -1033,13 +1043,12 @@ class EnergyHubWidget(FixedWidget):
         # Title label with reduced height
         self.title_label = QLabel("Smart Energy Hub")
         self.title_label.setAlignment(Qt.AlignCenter)
-        self.title_label.setStyleSheet("background-color: #FFFFFF; font-weight: bold; font-size: 16px; margin-bottom: 0px;")
+        self.title_label.setStyleSheet("font-weight: bold; font-size: 16px; margin-bottom: 0px;")
         self.title_label.setMaximumHeight(25)  # Keep title compact
         layout.addWidget(self.title_label)
         
         # Container for the hub visualization - optimized for remaining space
         self.hub_container = QWidget()
-        self.hub_container.setStyleSheet('background-color: #FFFFFF')
 
         # Grid layout with minimal padding
         self.hub_layout = QGridLayout(self.hub_container)
@@ -1201,12 +1210,12 @@ class EnergyHubWidget(FixedWidget):
         # SoC Labels 
         self.ev_soc_label = QLabel("EV SoC: 0%")
         self.ev_soc_label.setAlignment(Qt.AlignCenter)
-        self.ev_soc_label.setStyleSheet("font-weight: bold; font-size: 16px; margin-top: 5px; background-color: rgba(255, 255, 255, 180);")
+        self.ev_soc_label.setStyleSheet("font-weight: bold; font-size: 16px; margin-top: 5px; background-color:#90D5FF;")
         self.hub_layout.addWidget(self.ev_soc_label, 3, 0, 1, 6)
         
         self.battery_soc_label = QLabel("Battery SoC: 0%")
         self.battery_soc_label.setAlignment(Qt.AlignCenter)
-        self.battery_soc_label.setStyleSheet("font-weight: bold; font-size: 16px; margin-top: 5px; background-color: rgba(255, 255, 255, 180);")
+        self.battery_soc_label.setStyleSheet("font-weight: bold; font-size: 16px; margin-top: 5px; background-color: #90D5FF;")
         self.hub_layout.addWidget(self.battery_soc_label, 3, 18, 1, 6)
         
         # Make all columns equal width to ensure proper distribution

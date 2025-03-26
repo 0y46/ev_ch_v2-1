@@ -107,6 +107,9 @@ class PyQtGraphGauge(QWidget):
         max_text = pg.TextItem(text=str(self.max_value), color='black', anchor=(0.5, 0.5))
         max_text.setPos(np.cos(0 * np.pi/180) * 0.8, np.sin(0 * np.pi/180) * 0.8 - 0.35)
         self.plot_widget.addItem(max_text)
+        
+        # Add auto-range to make sure all elements are visible - simulates pressing the "A" button
+        self.plot_widget.getPlotItem().enableAutoRange()
     
     def _configure_colors(self):
         """Configure gauge colors based on type"""
@@ -234,3 +237,16 @@ class PyQtGraphGauge(QWidget):
         
         # Update the pointer line
         self.pointer.setData([0, end_x], [0, end_y])
+        
+        # Optional: Re-fit everything after updating the pointer
+        # Only uncomment this if needed - might cause performance issues if called too frequently
+        # self.auto_fit_gauge()
+
+    def auto_fit_gauge(self):
+        """
+        Automatically adjust the view to fit all gauge elements.
+        This provides the same effect as manually pressing the "A" button.
+        """
+        self.plot_widget.getPlotItem().enableAutoRange()
+        # Force an immediate update
+        self.plot_widget.getPlotItem().getViewBox().autoRange()
