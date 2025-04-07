@@ -5,7 +5,7 @@
             "y": 408
         },
         "size": {
-            "width": 748,
+            "width": 955,
             "height": 290
         }
     },
@@ -41,11 +41,11 @@
     },
     "ev_charging_table": {
         "pos": {
-            "x": 1330,
+            "x": 1431,
             "y": 408
         },
         "size": {
-            "width": 581,
+            "width": 480,
             "height": 290
         }
     },
@@ -61,11 +61,11 @@
     },
     "gauge_grid": {
         "pos": {
-            "x": 749,
+            "x": 956,
             "y": 408
         },
         "size": {
-            "width": 581,
+            "width": 480,
             "height": 290
         }
     },
