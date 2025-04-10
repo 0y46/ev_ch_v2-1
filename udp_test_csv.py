@@ -14,8 +14,7 @@ import argparse
 import threading
 
 from network_config import (
-    DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT, 
-    PARAM_PREFIX, HELLO_MESSAGE
+    DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT
 )
 
 class EVChargingTestServer:
@@ -59,11 +58,11 @@ class EVChargingTestServer:
         }
         
         # Reference values to send as responses
-        self.reference_values = {
-            "Vdc_ref": 400.0, 
-            "Pev_ref": -3000.0,
-            "Ppv_ref": 2500.0
-        }
+        # self.reference_values = {
+        #    "Vdc_ref": 400.0, 
+        #    "Pev_ref": -3000.0,
+        #    "Ppv_ref": 2500.0
+        #}
         
         # Initialize SoC values with realistic starting points
         self.soc_battery = 60.0  # Initial battery SoC (%)
@@ -188,7 +187,7 @@ class EVChargingTestServer:
     def _receive_loop(self):
         """
         Background thread method to continuously receive messages from clients.
-        Processes both parameter updates and hello messages.
+        Now accepts any message to establish a connection.
         """
         print("Started receive thread - listening for client messages")
         
@@ -211,16 +210,73 @@ class EVChargingTestServer:
                     if client_id not in self.client_addresses:
                         self.client_addresses[client_id] = addr
                         print(f"New client connected: {client_id}")
-                    
-                    # Process based on message type
-                    if message.startswith("PARAM"):
-                        print(f"\nReceived PARAM message from {client_id}: {message}")
-                        self._process_param_message(message, addr)
-                    elif message == "HELLO":
-                        print(f"\nReceived HELLO from {client_id}")
-                        # Send initial data packet to establish communication
+                        # Send first data packet immediately to establish connection
                         self._send_data_to_client(addr)
+                    
+                    # Try to parse this as a parameter update (format: tableID,value1,value2,...)
+                    parts = message.split(',')
+                    if len(parts) >= 2:
+                        try:
+                            # Try to extract table ID from the first part
+                            table_id = int(parts[0])
+                            
+                            # Determine table type based on ID
+                            table_type = None
+                            if table_id == 1:
+                                table_type = "grid_settings"
+                                # For grid settings, expect 5 values: vg_rms, ig_rms, frequency, thd, power_factor
+                                if len(parts) >= 6:  # ID + 5 parameters
+                                    params = {
+                                        "vg_rms": float(parts[1]),
+                                        "ig_rms": float(parts[2]),
+                                        "frequency": float(parts[3]),
+                                        "thd": float(parts[4]),
+                                        "power_factor": float(parts[5])
+                                    }
+                                    print(f"\nReceived grid_settings update from {client_id}:")
+                                    for name, value in params.items():
+                                        print(f"  {name} = {value}")
+                                        
+                                    # Apply updates - No reference response needed
+                                    self._apply_parameter_updates(table_type, params)
+                                    
+                            elif table_id == 2:
+                                table_type = "charging_setting"
+                                # For charging settings, expect 3 values: pv_power, ev_power, battery_power
+                                if len(parts) >= 4:  # ID + 3 parameters
+                                    params = {
+                                        "pv_power": float(parts[1]),
+                                        "ev_power": float(parts[2]),
+                                        "battery_power": float(parts[3])
+                                    }
+                                    print(f"\nReceived charging_setting update from {client_id}:")
+                                    for name, value in params.items():
+                                        print(f"  {name} = {value}")
+                                        
+                                    # Apply updates - No reference response needed
+                                    self._apply_parameter_updates(table_type, params)
+                                    
+                            elif table_id == 3:
+                                table_type = "ev_charging_setting"
+                                # For EV charging settings, expect 4 values: ev_voltage, ev_soc, demand_response, v2g
+                                if len(parts) >= 5:  # ID + 4 parameters
+                                    params = {
+                                        "ev_voltage": float(parts[1]),
+                                        "ev_soc": float(parts[2]),
+                                        "demand_response": parts[3] == "1",
+                                        "v2g": parts[4] == "1"
+                                    }
+                                    print(f"\nReceived ev_charging_setting update from {client_id}:")
+                                    for name, value in params.items():
+                                        print(f"  {name} = {value}")
+                                        
+                                    # Apply updates - No reference response needed
+                                    self._apply_parameter_updates(table_type, params)
+                        except (ValueError, IndexError) as e:
+                            # If parsing fails, just log the message
+                            print(f"\nReceived from {client_id}: {message}")
                     else:
+                        # Just log the message
                         print(f"\nReceived from {client_id}: {message}")
                 
             except socket.timeout:
@@ -230,22 +286,22 @@ class EVChargingTestServer:
                 print(f"Error receiving data: {e}")
                 time.sleep(0.1)  # Prevent tight loop if there's a persistent error
     
-    def _process_param_message(self, message, addr):
-        """
-        Process a received parameter update message.
-        
-        Parameters:
-        -----------
-        message : str
-            The parameter update message (PARAM,table_id,param1,value1,...)
-        addr : tuple
-            The sender's address (ip, port)
-        """
-        # Parse the message
-        parts = message.split(',')
-        if len(parts) < 3 or parts[0] != PARAM_PREFIX:
-            print(f"Invalid parameter message format: {message}")
-            return
+    #def _process_param_message(self, message, addr):
+    #    """
+    #    Process a received parameter update message.
+    #    
+    #    Parameters:
+    #    -----------
+    #    message : str
+    #        The parameter update message (PARAM,table_id,param1,value1,...)
+    #    addr : tuple
+    #        The sender's address (ip, port)
+    #    """
+    #    # Parse the message
+    #    parts = message.split(',')
+    #    if len(parts) < 3 or parts[0] != PARAM_PREFIX:
+    #        print(f"Invalid parameter message format: {message}")
+    #        return
         
         # Extract table ID and map to table type
         table_id = int(parts[1])
@@ -288,7 +344,7 @@ class EVChargingTestServer:
         self._apply_parameter_updates(table_type, params)
         
         # Send a response with reference values (similar to your mentor's system)
-        self._send_reference_response(addr)
+        #self._send_reference_response(addr)
     
     def _apply_parameter_updates(self, table_type, params):
         """
@@ -315,10 +371,8 @@ class EVChargingTestServer:
         elif table_type == "charging_setting":
             if "pv_power" in params:
                 self.ppv = params["pv_power"]
-                self.reference_values["Ppv_ref"] = params["pv_power"]
             if "ev_power" in params:
                 self.pev = params["ev_power"]
-                self.reference_values["Pev_ref"] = params["ev_power"]
             if "battery_power" in params:
                 self.pbattery = params["battery_power"]
         
@@ -328,24 +382,24 @@ class EVChargingTestServer:
             if "ev_soc" in params:
                 self.soc_ev = params["ev_soc"]
     
-    def _send_reference_response(self, addr):
-        """
-        Send a response with reference values like a mentor's system would.
-        
-        Parameters:
-        -----------
-        addr : tuple
-            The address to send the response to (ip, port)
-        """
-        # Create response message with reference values (Vdc_ref,Pev_ref,Ppv_ref)
-        response = f"{self.reference_values['Vdc_ref']},{self.reference_values['Pev_ref']},{self.reference_values['Ppv_ref']}"
-        
-        try:
-            # Send the response
-            self.socket.sendto(response.encode('utf-8'), addr)
-            print(f"Sent reference response: {response}")
-        except Exception as e:
-            print(f"Error sending reference response: {e}")
+    #def _send_reference_response(self, addr):
+    #    """
+    #    Send a response with reference values like a mentor's system would.
+    #    
+    #    Parameters:
+    #    -----------
+    #    addr : tuple
+    #        The address to send the response to (ip, port)
+    #    """
+    #    # Create response message with reference values (Vdc_ref,Pev_ref,Ppv_ref)
+    #    response = f"{self.reference_values['Vdc_ref']},{self.reference_values['Pev_ref']},{self.reference_values['Ppv_ref']}"
+    #    
+    #    try:
+    #        # Send the response
+    #        self.socket.sendto(response.encode('utf-8'), addr)
+    #        print(f"Sent reference response: {response}")
+    #    except Exception as e:
+    #        print(f"Error sending reference response: {e}")
     
     def _send_loop(self, duration):
         """
@@ -461,10 +515,10 @@ class EVChargingTestServer:
             self.soc_battery = max(0, min(100, self.soc_battery))
             self.soc_ev = max(0, min(100, self.soc_ev))
             
-            # Format the data as a CSV string with all parameters
+            # Format the data as a CSV string with all parameters - WITHOUT reference values at the end
             data = f"{vd:.2f},{id_val:.2f},{vdc:.2f},{vev:.2f},{vpv:.2f},{iev:.2f},{ipv:.2f},{ppv:.2f},{pev:.2f}," + \
-                   f"{pbattery:.2f},{pg:.2f},{qg:.2f},{pf:.2f},{fg:.2f},{thd:.2f}," + \
-                   f"{s1},{s2},{s3},{s4},{self.soc_battery:.2f},{self.soc_ev:.2f}"
+                f"{pbattery:.2f},{pg:.2f},{qg:.2f},{pf:.2f},{fg:.2f},{thd:.2f}," + \
+                f"{s1},{s2},{s3},{s4},{self.soc_battery:.2f},{self.soc_ev:.2f}"
             
             # Send the data
             self.socket.sendto(data.encode('utf-8'), addr)

@@ -12,9 +12,7 @@ from collections import deque
 
 from network_config import (
     DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT, DEFAULT_CLIENT_PORT, DEFAULT_BROADCAST_IP,
-    DEFAULT_BUFFER_SIZE, DEFAULT_SOCKET_TIMEOUT, DEFAULT_HELLO_INTERVAL,
-    DEFAULT_HISTORY_LENGTH, HELLO_MESSAGE, PARAM_PREFIX,
-    TABLE_ID_GRID, TABLE_ID_CHARGING, TABLE_ID_EV,
+    DEFAULT_BUFFER_SIZE, DEFAULT_SOCKET_TIMEOUT, DEFAULT_HISTORY_LENGTH, TABLE_ID_GRID, TABLE_ID_CHARGING, TABLE_ID_EV,
     DEFAULT_TIME_WINDOW
 )
 
@@ -178,7 +176,7 @@ class UnifiedUDPHandler:
             print(f"Configured to communicate with server at {self.server_ip}:{self.server_port}")
             
             # Send initial hello packet to server to establish communication
-            self._send_hello()
+            #self._send_hello()
             
             return True
             
@@ -200,14 +198,14 @@ class UnifiedUDPHandler:
         
         return True
     
-    def _send_hello(self):
-        """Send a hello packet to the server to establish communication."""
-        try:
-            if self.socket:
-                self.socket.sendto(HELLO_MESSAGE.encode('utf-8'), (self.server_ip, self.server_port))
-                print(f"Sent hello packet to server at {self.server_ip}:{self.server_port}")
-        except Exception as e:
-            print(f"Failed to send hello packet: {e}")
+    #def _send_hello(self):
+    #    """Send a hello packet to the server to establish communication."""
+    #    try:
+    #        if self.socket:
+    #            self.socket.sendto(HELLO_MESSAGE.encode('utf-8'), (self.server_ip, self.server_port))
+    #            print(f"Sent hello packet to server at {self.server_ip}:{self.server_port}")
+    #    except Exception as e:
+    #        print(f"Failed to send hello packet: {e}")
     
     def _receive_loop(self):
         """
@@ -217,8 +215,8 @@ class UnifiedUDPHandler:
         print("Started receive thread - listening for messages")
         start_time = time.time()
         packet_count = 0
-        last_hello_time = time.time()
-        hello_interval = DEFAULT_HELLO_INTERVAL # Send hello every 10 seconds if no data
+        #last_hello_time = time.time()
+        #hello_interval = DEFAULT_HELLO_INTERVAL # Send hello every 10 seconds if no data
         
         while self.is_running and self.socket:
             try:
@@ -253,11 +251,7 @@ class UnifiedUDPHandler:
                 
             except socket.timeout:
                 # This is expected if no data is received within the timeout period
-                # Periodically send a hello packet to ensure server knows our address/port
-                now = time.time()
-                if now - last_hello_time > hello_interval:
-                    self._send_hello()
-                    last_hello_time = now
+                pass
                     
             except Exception as e:
                 if self.is_running:  # Only log errors if we're supposed to be running
@@ -432,10 +426,7 @@ class UnifiedUDPHandler:
     
     def send_parameter_update(self, table_type, params):
         """
-        Send parameter updates over UDP using the CSV format.
-        
-        Formats the message as:
-        PARAM,table_id,param1,value1,param2,value2,...
+        Send parameter updates over UDP using the simplified CSV format.
         
         Parameters:
         -----------
@@ -443,7 +434,7 @@ class UnifiedUDPHandler:
             Type of table being updated (e.g., 'charging_setting')
         params : dict
             Dictionary of parameter names and their new values
-            
+                
         Returns:
         --------
         bool
@@ -455,26 +446,47 @@ class UnifiedUDPHandler:
             
         try:
             # Get table ID 
-            table_id = self.table_ids.get(table_type, 0)
+            table_id = 0
+            if table_type == "grid_settings":
+                table_id = 1
+            elif table_type == "charging_setting":
+                table_id = 2
+            elif table_type == "ev_charging_setting":
+                table_id = 3
+                
             if table_id == 0:
                 print(f"Unknown table type: {table_type}")
                 return False
             
-            # Start building the CSV string with command and table ID
-            csv_parts = [PARAM_PREFIX, str(table_id)]
+            # Build CSV string with just ID and values (no parameter names)
+            csv_parts = [str(table_id)]
             
-            # Add each parameter and value
-            for param_name, value in params.items():
-                # Convert parameter name to lowercase with underscores to match expected format
-                param_code = param_name.lower().replace(" ", "_")
-                # Handle boolean values (convert True/False to 1/0)
-                if isinstance(value, bool):
-                    value_str = "1" if value else "0"
-                else:
-                    value_str = str(value)
+            # Table 1: Grid Settings
+            if table_id == 1:  # grid_settings
+                # Order: vg_rms, ig_rms, frequency, thd, power_factor
+                csv_parts.append(str(params.get("Vg_rms", "0")))
+                csv_parts.append(str(params.get("Ig_rms", "0")))
+                csv_parts.append(str(params.get("Frequency", "50")))
+                csv_parts.append(str(params.get("THD", "0")))
+                csv_parts.append(str(params.get("Power factor", "0.95")))
                 
-                csv_parts.append(param_code)
-                csv_parts.append(value_str)
+            # Table 2: Charging Settings
+            elif table_id == 2:  # charging_setting
+                # Order: pv_power, ev_power, battery_power
+                csv_parts.append(str(params.get("PV power", "0")))
+                csv_parts.append(str(params.get("EV power", "0")))
+                csv_parts.append(str(params.get("Battery power", "0")))
+                
+            # Table 3: EV Charging Settings
+            elif table_id == 3:  # ev_charging_setting
+                # Order: ev_voltage, ev_soc, demand_response, v2g
+                csv_parts.append(str(params.get("EV voltage", "0")))
+                csv_parts.append(str(params.get("EV SoC", "0")))
+                # Convert boolean values to 0/1
+                dr_val = "1" if params.get("Demand Response", False) else "0"
+                v2g_val = "1" if params.get("V2G", False) else "0"
+                csv_parts.append(dr_val)
+                csv_parts.append(v2g_val)
             
             # Join with commas to create the final CSV string
             csv_data = ",".join(csv_parts)
