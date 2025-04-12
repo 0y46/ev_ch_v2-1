@@ -529,7 +529,7 @@ class UnifiedUDPHandler:
                 return False
             
             # Start building CSV string with the table ID
-            csv_parts = [str(table_id)]
+            csv_parts = [str(int(table_id))]
             
             # Build CSV parts based on table type
             # Important: order must match hardware controller's expectations
@@ -674,7 +674,17 @@ class UnifiedUDPHandler:
 
     def get_waveform_data(self, waveform_type, n_points=None, time_window=DEFAULT_TIME_WINDOW):
         """
-        Get waveform data for voltage or current.
+        Get waveform data for voltage or current for three-phase visualization.
+        
+        This method retrieves historical waveform data with thread-safe access.
+        It's used to visualize three-phase AC waveforms (voltage or current)
+        on oscilloscope-like displays in the UI.
+        
+        Process:
+        1. Retrieve time history and waveform data with thread safety locks
+        2. Apply adaptive data selection based on available data
+        3. Filter data based on either time window or point count
+        4. Return synchronized time and waveform arrays for all three phases
         
         Parameters:
         -----------
@@ -682,136 +692,232 @@ class UnifiedUDPHandler:
             The type of waveform to get ('Grid_Voltage' or 'Grid_Current').
         n_points : int or None
             Number of data points to return. If None, returns all available history.
+            Only applied if time_window is None.
         time_window : float or None
-            Time window in seconds to include. If None, returns all available history.
+            Time window in seconds to include (most recent data). 
+            If None, returns all available history or applies n_points filter.
+            
+        Returns:
+        --------
+        tuple
+            (time_data, phase_a, phase_b, phase_c)
+            - time_data: numpy array of timestamps (seconds)
+            - phase_a: numpy array of Phase A values
+            - phase_b: numpy array of Phase B values
+            - phase_c: numpy array of Phase C values
+            
+            All arrays have the same length and are synchronized.
+            Empty arrays are returned if no data is available.
         """
+        # Validate input parameter to prevent KeyError
         if waveform_type not in self.waveform_data:
+            # Return empty arrays if waveform type is not recognized
             return np.array([]), np.array([]), np.array([]), np.array([])
         
-        # Get all history first (with thread safety)
+        # Get all history first with thread safety
+        # Use locks to prevent race conditions with the data collection thread
         with self.time_lock:
+            # Convert deque to numpy array for easier manipulation
             time_data = np.array(list(self.time_history))
         
+        # Separate lock for waveform data to minimize lock contention
         with self.data_lock:
+            # Get all three phases of waveform data
             phase_a = np.array(list(self.waveform_data[waveform_type]['phaseA']))
             phase_b = np.array(list(self.waveform_data[waveform_type]['phaseB']))
             phase_c = np.array(list(self.waveform_data[waveform_type]['phaseC']))
         
-        # IMPORTANT FIX: If there's any data but less than enough for time_window,
+        # Adaptive data handling: if we have any data but not enough for the requested window,
         # return all available data rather than an empty set
         if len(time_data) > 0:
-            # Use all available data if there's not enough
+            # Check if we have enough data to cover the time window
+            # We need at least 2 points and sufficient time range
             if time_window is not None and (len(time_data) < 2 or 
                                         (time_data[-1] - time_data[0]) < time_window):
                 print(f"DEBUG: Not enough data for {time_window}s window, using all {len(time_data)} points")
+                # Return all available data as fallback
                 return time_data, phase_a, phase_b, phase_c
         else:
+            # No data available, return empty arrays
             return np.array([]), np.array([]), np.array([]), np.array([])
         
-        # Original time window filter logic continues...
+        # Apply time window filter if specified
         if time_window is not None:
+            # Use helper method to filter data to specified time window
             time_data, phase_a, phase_b, phase_c = self.filter_by_time_window(
                 time_data, phase_a, phase_b, phase_c, time_window=time_window
             )
-        # Otherwise apply n_points filter
+        # Otherwise apply n_points filter if specified
         elif n_points is not None:
-            # Get the most recent n_points
-            n = min(n_points, len(time_data))
+            # Get only the most recent n_points
+            n = min(n_points, len(time_data))  # Safety check
+            # Take slices from the end of each array
             time_data = time_data[-n:]
             phase_a = phase_a[-n:]
             phase_b = phase_b[-n:]
             phase_c = phase_c[-n:]
         
+        # Return time data and all three phase values as synchronized arrays
         return time_data, phase_a, phase_b, phase_c
 
     def get_power_data(self, n_points=None, time_window=DEFAULT_TIME_WINDOW):
         """
-        Get power data for grid, PV, EV, and battery.
+        Get power data for grid, PV, EV, and battery for power flow visualization.
+        
+        This method retrieves historical power values to visualize energy flow
+        between grid, PV panels, EV, and battery storage in the system.
+        
+        Power convention:
+        - Positive grid power: Power flowing from grid to system (consumption)
+        - Negative grid power: Power flowing from system to grid (export)
+        - Positive PV power: Power generated from PV panels
+        - Positive EV power: Power flowing to EV (charging)
+        - Negative EV power: Power flowing from EV (V2G mode)
+        - Positive battery power: Charging battery
+        - Negative battery power: Discharging battery
+        
+        Process:
+        1. Retrieve time and power data with thread safety
+        2. Handle edge cases (empty data, insufficient time range)
+        3. Apply filtering based on time window or point count
+        4. Return synchronized arrays for visualization
         
         Parameters:
         -----------
         n_points : int or None
             Number of data points to return. If None, returns all available history.
+            Only applied if time_window is None.
         time_window : float or None
-            Time window in seconds to include. If None, returns all available history.
+            Time window in seconds to include (most recent data).
+            If None, returns all available history or applies n_points filter.
+            
+        Returns:
+        --------
+        tuple
+            (time_data, grid_power, pv_power, ev_power, battery_power)
+            - time_data: numpy array of timestamps (seconds)
+            - grid_power: numpy array of grid power values (W)
+            - pv_power: numpy array of PV power values (W)
+            - ev_power: numpy array of EV power values (W)
+            - battery_power: numpy array of battery power values (W)
+            
+            All arrays have the same length and are synchronized.
+            Arrays with single zero value are returned if no data is available.
         """
-        # Get all history first (with thread safety)
+        # Get all history first with thread safety
         with self.time_lock:
             time_data = np.array(list(self.time_history))
         
+        # Acquire data lock to safely read power histories
         with self.data_lock:
+            # Get all power values
             grid_power = np.array(list(self.data_history['Grid_Power']))
             pv_power = np.array(list(self.data_history['PhotoVoltaic_Power']))
             ev_power = np.array(list(self.data_history['ElectricVehicle_Power']))
             battery_power = np.array(list(self.data_history['Battery_Power']))
         
-        # IMPORTANT FIX: If there's any data but less than enough for time_window,
-        # return all available data rather than an empty set
+        # Adaptive handling: if we have data but not enough for the time window,
+        # return all available data rather than filtering potentially too much
         if len(time_data) > 0:
-            # Use all available data if there's not enough
             if time_window is not None and (len(time_data) < 2 or 
                                         (time_data[-1] - time_data[0]) < time_window):
                 print(f"DEBUG: Not enough data for {time_window}s window, using all {len(time_data)} points")
+                # Return all available data as fallback
                 return time_data, grid_power, pv_power, ev_power, battery_power
         else:
+            # No data available - return arrays with single zero value
+            # This allows plots to initialize with a zero baseline
             return np.array([0]), np.array([0]), np.array([0]), np.array([0]), np.array([0])
         
         # Apply time window filter if specified
         if time_window is not None:
+            # Use helper method to filter all power arrays to the specified window
             time_data, grid_power, pv_power, ev_power, battery_power = self.filter_by_time_window(
                 time_data, grid_power, pv_power, ev_power, battery_power, time_window=time_window
             )
-        # Otherwise apply n_points filter
+        # Otherwise apply n_points filter if specified
         elif n_points is not None:
-            # Get the most recent n_points
-            n = min(n_points, len(time_data))
+            # Get only the most recent n_points (e.g., for a fixed-size display)
+            n = min(n_points, len(time_data))  # Safety check for out of bounds
+            # Take slices from the end of each array
             time_data = time_data[-n:]
             grid_power = grid_power[-n:]
             pv_power = pv_power[-n:]
             ev_power = ev_power[-n:]
             battery_power = battery_power[-n:]
         
+        # Return synchronized time and power arrays
         return time_data, grid_power, pv_power, ev_power, battery_power
 
     def get_parameter_history(self, parameter, n_points=None, time_window=DEFAULT_TIME_WINDOW):
         """
-        Get historical data for a specific parameter.
+        Get historical data for a specific parameter for trend visualization.
+        
+        This method provides a general-purpose way to retrieve historical values
+        for any monitored parameter. It's used for creating trend graphs, analyzing
+        parameter behavior over time, and providing data for custom visualizations.
+        
+        Process:
+        1. Validate parameter exists in data history
+        2. Retrieve time and parameter data with thread safety
+        3. Apply filtering based on time window or point count
+        4. Return synchronized time and parameter arrays
         
         Parameters:
         -----------
         parameter : str
-            The name of the parameter to get history for.
+            The name of the parameter to get history for (must match a key in data_history).
+            Examples: 'Grid_Voltage', 'Frequency', 'Battery_SoC', etc.
         n_points : int or None
             Number of historical data points to return. If None, returns all available history.
+            Only applied if time_window is None.
         time_window : float or None
-            Time window in seconds to include. If None, returns all available history.
+            Time window in seconds to include (most recent data).
+            If None, returns all available history or applies n_points filter.
+            
+        Returns:
+        --------
+        tuple
+            (time_data, param_data)
+            - time_data: numpy array of timestamps (seconds)
+            - param_data: numpy array of parameter values
+            
+            Both arrays have the same length and are synchronized.
+            Empty arrays are returned if the parameter doesn't exist or no data is available.
         """
+        # Validate parameter name to prevent KeyError
         if parameter not in self.data_history:
+            # Return empty arrays if parameter is not recognized
             return np.array([]), np.array([])
         
-        # Get all history first (with thread safety)
+        # Get time history with thread safety
         with self.time_lock:
             time_data = np.array(list(self.time_history))
         
+        # Get parameter history with thread safety
         with self.data_lock:
             param_data = np.array(list(self.data_history[parameter]))
         
-        # If empty, return empty arrays
+        # Check for empty data case
         if len(time_data) == 0:
+            # No data available, return empty arrays
             return np.array([]), np.array([])
         
         # Apply time window filter if specified
         if time_window is not None:
+            # Use helper method to filter data to specified time window
             time_data, param_data = self.filter_by_time_window(
                 time_data, param_data, time_window=time_window
             )
-        # Otherwise apply n_points filter
+        # Otherwise apply n_points filter if specified
         elif n_points is not None:
-            # Get the most recent n_points
-            n = min(n_points, len(time_data))
+            # Get only the most recent n_points
+            n = min(n_points, len(time_data))  # Safety check
+            # Take slices from the end of each array
             time_data = time_data[-n:]
             param_data = param_data[-n:]
         
+        # Return synchronized time and parameter data arrays
         return time_data, param_data
     
     def _generate_waveforms(self, voltage_amplitude, current_amplitude, timestamp):

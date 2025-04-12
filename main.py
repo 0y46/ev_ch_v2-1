@@ -89,30 +89,6 @@ class EVChargingMonitor(QMainWindow):
                 print("Failed to initialize unified UDP handler")
                 return False
             
-            # Define a callback to handle reference value responses
-            def handle_reference_values(values, addr):
-                """
-                Callback function to process reference values received from the server.
-                Updates the UI elements with the new reference values.
-                
-                Parameters:
-                -----------
-                values : list
-                    List of numeric values (Vdc_ref, Pev_ref, Ppv_ref)
-                addr : tuple
-                    Sender's address (ip, port)
-                """
-                print(f"Received reference values from {addr}: {values}")
-                
-                # Update reference values in the UI if they exist
-                if hasattr(self, 'setup_tab') and values:
-                    if len(values) >= 1:
-                        self.setup_tab.vdc_ref_value.setText(f"{values[0]:.1f} V")
-                    if len(values) >= 2:
-                        self.setup_tab.pev_ref_value.setText(f"{values[1]:.1f} W")
-                    if len(values) >= 3:
-                        self.setup_tab.ppv_ref_value.setText(f"{values[2]:.1f} W")
-            
             print("Unified UDP handler initialized for bidirectional communication")
             return True
         else:
@@ -549,16 +525,6 @@ class EVChargingMonitor(QMainWindow):
         self.energy_hub.update_battery_status(latest_data.get('S4_Status', 0))
         self.energy_hub.update_ev_soc(latest_data.get('EV_SoC', 0))
         self.energy_hub.update_battery_soc(latest_data.get('Battery_SoC', 0))
-        
-        # Get reference values if available
-        ref_values = self.unified_udp.get_reference_values()
-        if ref_values and hasattr(self, 'setup_tab'):
-            if ref_values["Vdc_ref"] is not None:
-                self.setup_tab.vdc_ref_value.setText(f"{ref_values['Vdc_ref']:.1f} V")
-            if ref_values["Pev_ref"] is not None:
-                self.setup_tab.pev_ref_value.setText(f"{ref_values['Pev_ref']:.1f} W")
-            if ref_values["Ppv_ref"] is not None:
-                self.setup_tab.ppv_ref_value.setText(f"{ref_values['Ppv_ref']:.1f} W")
     
     def on_table_save(self, table_type, input_values):
         """Handle save button click from tables"""

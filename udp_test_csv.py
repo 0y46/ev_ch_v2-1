@@ -57,13 +57,6 @@ class EVChargingTestServer:
             "ev_charging_setting": {}
         }
         
-        # Reference values to send as responses
-        # self.reference_values = {
-        #    "Vdc_ref": 400.0, 
-        #    "Pev_ref": -3000.0,
-        #    "Ppv_ref": 2500.0
-        #}
-        
         # Initialize SoC values with realistic starting points
         self.soc_battery = 60.0  # Initial battery SoC (%)
         self.soc_ev = 45.0       # Initial EV SoC (%)
@@ -218,7 +211,12 @@ class EVChargingTestServer:
                     if len(parts) >= 2:
                         try:
                             # Try to extract table ID from the first part
-                            table_id = int(parts[0])
+                            # Add defensive error handling
+                            try:
+                                table_id = int(float(parts[0]))  # Convert through float for safety
+                            except ValueError:
+                                print(f"Invalid table ID format: {parts[0]}")
+                                continue  # Skip this message and continue the loop
                             
                             # Determine table type based on ID
                             table_type = None
@@ -285,66 +283,6 @@ class EVChargingTestServer:
             except Exception as e:
                 print(f"Error receiving data: {e}")
                 time.sleep(0.1)  # Prevent tight loop if there's a persistent error
-    
-    #def _process_param_message(self, message, addr):
-    #    """
-    #    Process a received parameter update message.
-    #    
-    #    Parameters:
-    #    -----------
-    #    message : str
-    #        The parameter update message (PARAM,table_id,param1,value1,...)
-    #    addr : tuple
-    #        The sender's address (ip, port)
-    #    """
-    #    # Parse the message
-    #    parts = message.split(',')
-    #    if len(parts) < 3 or parts[0] != PARAM_PREFIX:
-    #        print(f"Invalid parameter message format: {message}")
-    #        return
-        
-        # Extract table ID and map to table type
-        table_id = int(parts[1])
-        table_type = None
-        if table_id == 1:
-            table_type = "grid_settings"
-        elif table_id == 2:
-            table_type = "charging_setting"
-        elif table_id == 3:
-            table_type = "ev_charging_setting"
-        else:
-            print(f"Unknown table ID: {table_id}")
-            return
-            
-        # Extract parameters and values
-        params = {}
-        for i in range(2, len(parts)-1, 2):
-            if i+1 < len(parts):
-                param_name = parts[i]
-                param_value = parts[i+1]
-                
-                # Convert value to appropriate type
-                try:
-                    if param_value == "0" or param_value == "1":
-                        # Likely a boolean
-                        params[param_name] = param_value == "1"
-                    else:
-                        # Try as float
-                        params[param_name] = float(param_value)
-                except ValueError:
-                    # Leave as string if conversion fails
-                    params[param_name] = param_value
-                
-                print(f"  {param_name} = {params[param_name]}")
-        
-        # Store the parameters
-        self.received_params[table_type] = params
-        
-        # Apply parameter updates to simulation values
-        self._apply_parameter_updates(table_type, params)
-        
-        # Send a response with reference values (similar to your mentor's system)
-        #self._send_reference_response(addr)
     
     def _apply_parameter_updates(self, table_type, params):
         """
