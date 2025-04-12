@@ -113,9 +113,6 @@ class EVChargingMonitor(QMainWindow):
                     if len(values) >= 3:
                         self.setup_tab.ppv_ref_value.setText(f"{values[2]:.1f} W")
             
-            # Register the callback
-            self.unified_udp.register_response_callback(handle_reference_values)
-            
             print("Unified UDP handler initialized for bidirectional communication")
             return True
         else:
