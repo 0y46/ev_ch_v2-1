@@ -63,14 +63,14 @@ class UnifiedUDPHandler:
         }
         
         # Last received reference values
-        self.reference_values = {
-            "Vdc_ref": None,
-            "Pev_ref": None,
-            "Ppv_ref": None
-        }
+        # self.reference_values = {
+        #     "Vdc_ref": None,
+        #     "Pev_ref": None,
+        #     "Ppv_ref": None
+        # }
         
         # Dictionary to store the last response received from each remote address
-        self.last_responses = {}
+        #self.last_responses = {}
         
         # Data storage - similar to UDPClient
         self.latest_data = {
@@ -145,7 +145,7 @@ class UnifiedUDPHandler:
         self.time_lock = threading.Lock()
         
         # Parameter update callback
-        self.response_callback = None
+        #self.response_callback = None
         
         # Try to initialize the socket
         self._initialize_socket()
@@ -210,13 +210,10 @@ class UnifiedUDPHandler:
     def _receive_loop(self):
         """
         Background thread method to continuously receive and process UDP packets.
-        Handles both data packets and parameter responses.
         """
         print("Started receive thread - listening for messages")
         start_time = time.time()
         packet_count = 0
-        #last_hello_time = time.time()
-        #hello_interval = DEFAULT_HELLO_INTERVAL # Send hello every 10 seconds if no data
         
         while self.is_running and self.socket:
             try:
@@ -227,28 +224,20 @@ class UnifiedUDPHandler:
                     # Process the received data
                     data_str = data.decode('utf-8').strip()
                     
-                    # Check if this is a parameter update message (starts with "PARAM")
+                    # Skip if this is a parameter update message (starts with "PARAM")
                     if data_str.startswith("PARAM"):
                         print(f"Received parameter message (skipping): {data_str[:40]}...")
                         continue  # Skip further processing
                         
-                    # Count commas to estimate number of values
-                    comma_count = data_str.count(',')
+                    # This is a regular data packet
+                    packet_count += 1
+                    if packet_count % 100 == 0:
+                        print(f"UDP packets received: {packet_count}")
                     
-                    # Check if it looks like a reference value response (2-3 values only)
-                    if 0 <= comma_count <= 2:
-                        # This looks like a reference value response
-                        self._process_reference_response(data_str, addr)
-                    else:
-                        # This looks like a regular data packet
-                        packet_count += 1
-                        if packet_count % 100 == 0:
-                            print(f"UDP packets received: {packet_count}")
-                        
-                        # Process the data packet with the current time
-                        current_time = time.time() - start_time
-                        self._process_data_packet(data_str, current_time)
-                
+                    # Process the data packet with the current time
+                    current_time = time.time() - start_time
+                    self._process_data_packet(data_str, current_time)
+                    
             except socket.timeout:
                 # This is expected if no data is received within the timeout period
                 pass
@@ -258,54 +247,54 @@ class UnifiedUDPHandler:
                     print(f"Error in receive loop: {e}")
                     time.sleep(0.1)  # Prevent tight loop if there's a persistent error
     
-    def _process_reference_response(self, data_str, addr):
-        """
-        Process a reference value response from the server.
+    # def _process_reference_response(self, data_str, addr):
+    #     """
+    #     Process a reference value response from the server.
         
-        Parameters:
-        -----------
-        data_str : str
-            The reference value response string (e.g., "400.0,-3000.0,2500.0")
-        addr : tuple
-            The sender's address (ip, port)
-        """
-        try:
-            # Split the response string into values
-            values = data_str.split(',')
+    #     Parameters:
+    #     -----------
+    #     data_str : str
+    #         The reference value response string (e.g., "400.0,-3000.0,2500.0")
+    #     addr : tuple
+    #         The sender's address (ip, port)
+    #     """
+    #     try:
+    #         # Split the response string into values
+    #         values = data_str.split(',')
             
-            # Try to parse the values as floats
-            parsed_values = []
-            for val in values:
-                try:
-                    parsed_values.append(float(val))
-                except ValueError:
-                    # Skip non-numeric values
-                    print(f"Skipping non-numeric value: {val}")
-                    continue
+    #         # Try to parse the values as floats
+    #         parsed_values = []
+    #         for val in values:
+    #             try:
+    #                 parsed_values.append(float(val))
+    #             except ValueError:
+    #                 # Skip non-numeric values
+    #                 print(f"Skipping non-numeric value: {val}")
+    #                 continue
                     
-            # Store the response by address
-            self.last_responses[addr] = {
-                'time': time.time(),
-                'data': data_str
-            }
+    #         # Store the response by address
+    #         self.last_responses[addr] = {
+    #             'time': time.time(),
+    #             'data': data_str
+    #         }
             
-            # Update reference values (thread-safe)
-            with self.data_lock:
-                if len(parsed_values) >= 1:
-                    self.reference_values["Vdc_ref"] = parsed_values[0]
-                if len(parsed_values) >= 2:
-                    self.reference_values["Pev_ref"] = parsed_values[1]
-                if len(parsed_values) >= 3:
-                    self.reference_values["Ppv_ref"] = parsed_values[2]
+    #         # Update reference values (thread-safe)
+    #         with self.data_lock:
+    #             if len(parsed_values) >= 1:
+    #                 self.reference_values["Vdc_ref"] = parsed_values[0]
+    #             if len(parsed_values) >= 2:
+    #                 self.reference_values["Pev_ref"] = parsed_values[1]
+    #             if len(parsed_values) >= 3:
+    #                 self.reference_values["Ppv_ref"] = parsed_values[2]
             
-            print(f"Received reference values: {self.reference_values}")
+    #         print(f"Received reference values: {self.reference_values}")
             
-            # Call the response callback if registered
-            if self.response_callback:
-                self.response_callback(parsed_values, addr)
+    #         # Call the response callback if registered
+    #         if self.response_callback:
+    #             self.response_callback(parsed_values, addr)
                 
-        except Exception as e:
-            print(f"Error parsing reference values: {e}")
+    #     except Exception as e:
+    #         print(f"Error parsing reference values: {e}")
     
     def _process_data_packet(self, data_str, timestamp):
         """
@@ -502,17 +491,17 @@ class UnifiedUDPHandler:
             print(f"Error sending parameter update: {e}")
             return False
     
-    def register_response_callback(self, callback):
-        """
-        Register a callback function to handle parameter responses.
+    # def register_response_callback(self, callback):
+    #     """
+    #     Register a callback function to handle parameter responses.
         
-        Parameters:
-        -----------
-        callback : function
-            Function to call when parameter responses are received
-            Should accept (values, addr) parameters
-        """
-        self.response_callback = callback
+    #     Parameters:
+    #     -----------
+    #     callback : function
+    #         Function to call when parameter responses are received
+    #         Should accept (values, addr) parameters
+    #     """
+    #     self.response_callback = callback
     
     def get_latest_data(self):
         """
@@ -526,36 +515,36 @@ class UnifiedUDPHandler:
         with self.data_lock:
             return self.latest_data.copy()
     
-    def get_reference_values(self):
-        """
-        Get the current reference values.
+    # def get_reference_values(self):
+    #     """
+    #     Get the current reference values.
         
-        Returns:
-        --------
-        dict
-            Dictionary containing the reference values.
-        """
-        with self.data_lock:
-            return self.reference_values.copy()
+    #     Returns:
+    #     --------
+    #     dict
+    #         Dictionary containing the reference values.
+    #     """
+    #     with self.data_lock:
+    #         return self.reference_values.copy()
     
-    def get_last_response(self, address=None):
-        """
-        Get the last response received from a specific address.
+    # def get_last_response(self, address=None):
+    #     """
+    #     Get the last response received from a specific address.
         
-        Parameters:
-        -----------
-        address : tuple or None
-            Specific address to get response from, or None for server address
+    #     Parameters:
+    #     -----------
+    #     address : tuple or None
+    #         Specific address to get response from, or None for server address
         
-        Returns:
-        --------
-        dict or None
-            Last response data or None if no response received
-        """
-        if address is None:
-            address = (self.server_ip, self.server_port)
+    #     Returns:
+    #     --------
+    #     dict or None
+    #         Last response data or None if no response received
+    #     """
+    #     if address is None:
+    #         address = (self.server_ip, self.server_port)
             
-        return self.last_responses.get(address)
+    #     return self.last_responses.get(address)
     
     def filter_by_time_window(self, time_data, *data_series, time_window=DEFAULT_TIME_WINDOW):
         """
@@ -825,24 +814,34 @@ class UnifiedUDPHandler:
     def close(self):
         """Clean up resources and stop the receive thread."""
         print("Stopping UDP handler...")
+        
+        # First set the running flag to False to signal threads to stop
         self.is_running = False
         
-        # Wait for receive thread to terminate
+        # Wait a moment to let the threads notice the flag
+        time.sleep(0.2)
+        
+        # Wait for receive thread to terminate with a longer timeout
         if self.receive_thread and self.receive_thread.is_alive():
             print("Waiting for receive thread to terminate...")
-            self.receive_thread.join(timeout=2.0)
+            try:
+                self.receive_thread.join(timeout=3.0)
+            except RuntimeError:
+                print("Warning: Error joining receive thread")
+                
             if self.receive_thread.is_alive():
                 print("Warning: Receive thread did not terminate cleanly")
         
-        # Close the socket
+        # Close the socket after threads have stopped or timed out
         if self.socket:
             try:
                 print("Closing UDP socket...")
                 self.socket.close()
             except Exception as e:
                 print(f"Error closing socket: {e}")
-            self.socket = None
-            
+            finally:
+                self.socket = None
+                
         print("UDP handler stopped")
 
 
@@ -870,14 +869,14 @@ def initialize_unified_udp(server_ip=DEFAULT_SERVER_IP, server_port=DEFAULT_SERV
     global unified_udp
     unified_udp = UnifiedUDPHandler(server_ip, server_port, local_port)
     
-    # Define a simple response handler function
-    def handle_parameter_response(values, addr):
-        print(f"Parameter response from {addr}: {values}")
-        # Here you could update UI elements or other application state
-        # based on the received values
+    # # Define a simple response handler function
+    # def handle_parameter_response(values, addr):
+    #     print(f"Parameter response from {addr}: {values}")
+    #     # Here you could update UI elements or other application state
+    #     # based on the received values
     
-    # Register the handler
-    unified_udp.register_response_callback(handle_parameter_response)
+    # # Register the handler
+    # unified_udp.register_response_callback(handle_parameter_response)
     
     return unified_udp
 
