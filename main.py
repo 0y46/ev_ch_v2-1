@@ -89,6 +89,9 @@ class EVChargingMonitor(QMainWindow):
                 print("Failed to initialize unified UDP handler")
                 return False
             
+            # Connect the data logger to the UDP handler for raw data logging
+            self.unified_udp.set_data_logger(self.data_logger)
+
             print("Unified UDP handler initialized for bidirectional communication")
             return True
         else:

@@ -96,6 +96,8 @@ class UnifiedUDPHandler:
         self.is_running = False           # Flag to control background thread
         self.receive_thread = None        # Background thread for receiving data
         
+        self.data_logger = None  # Will be set by main.py
+        
         # ------ Parameter Table Mapping ------
         # Maps settings screen types to table IDs expected by hardware
         self.table_ids = {
@@ -199,6 +201,17 @@ class UnifiedUDPHandler:
         self._initialize_socket()        # Set up the UDP socket
         self._start_receive_thread()     # Start background processing
     
+    def set_data_logger(self, logger):
+        """
+        Set a data logger instance to receive raw packets.
+        
+        Parameters:
+        -----------
+        logger : DataLogger
+            DataLogger instance that will receive raw packets
+        """
+        self.data_logger = logger
+
     def _initialize_socket(self):
         """
         Initialize the UDP socket for bidirectional communication.
@@ -310,6 +323,10 @@ class UnifiedUDPHandler:
                     # Convert received bytes to string using UTF-8 encoding
                     # strip() removes any whitespace/newlines at start/end
                     data_str = data.decode('utf-8').strip()
+
+                    # Log raw packet if logger is available
+                    if self.data_logger and hasattr(self.data_logger, 'log_raw_packet'):
+                        self.data_logger.log_raw_packet(data_str, addr)
                     
                     # Skip parameter messages (legacy format no longer needed)
                     if data_str.startswith("PARAM"):
@@ -1048,6 +1065,7 @@ class UnifiedUDPHandler:
 
 # Global singleton instance for application-wide use
 unified_udp = None
+
 
 def initialize_unified_udp(server_ip=DEFAULT_SERVER_IP, server_port=DEFAULT_SERVER_PORT, local_port=DEFAULT_CLIENT_PORT):
     """
