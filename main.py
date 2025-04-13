@@ -246,15 +246,26 @@ class EVChargingMonitor(QMainWindow):
             <p>Dr. Ali Sharida</p>
             <br>
             <h3>About This Project:</h3>
-            <p>This system provides real-time monitoring of an EV charging station, displaying voltage, current, and power measurements. 
-            It can receive data from hardware via UDP communication and visualize the parameters through dynamic graphs and gauges.</p>
+            <p>This advanced monitoring system provides real-time visualization and analysis of electric vehicle charging infrastructure, 
+            integrating renewable energy sources with grid and battery storage solutions.</p>
+            
+            <h4>System Architecture:</h4>
+            <p>Built on a modular Python framework, the system collects data via UDP communication from hardware interfaces, 
+            processes it in real-time, and presents actionable information through an intuitive dashboard.</p>
+            
             <p>The system features:</p>
-            <ul style="text-align: left; margin-left: 100px; margin-right: 100px;">
-                <li>Three-phase voltage and current visualization</li>
-                <li>Power flow monitoring between grid, PV, EV, and battery</li>
-                <li>Real-time parameter display</li>
-                <li>Data logging capabilities</li>
+            <ul style="text-align: left; margin-left: 80px; margin-right: 80px;">
+                <li><strong>Advanced Visualization:</strong> Dynamic three-phase voltage and current waveforms with precise oscilloscope-like functionality</li>
+                <li><strong>Comprehensive Power Flow Analysis:</strong> Real-time monitoring of bidirectional energy transfer between grid, photovoltaic system, electric vehicle, and battery storage</li>
+                <li><strong>Intelligent Parameter Display:</strong> Key electrical parameters including voltage, current, power factor, THD, and frequency</li>
+                <li><strong>Smart Energy Hub:</strong> Visual representation of system topology and status indicators</li>
+                <li><strong>Dual-mode Data Logging:</strong> Both processed data for analysis and raw data for debugging with CSV export</li>
+                <li><strong>Vehicle-to-Grid (V2G) Support:</strong> Monitoring and control of bidirectional power flow capabilities</li>
+                <li><strong>Demand Response Integration:</strong> Support for smart grid demand response scenarios</li>
             </ul>
+            <br>
+            <p><strong>Applications:</strong> Research, development, and demonstration of EV charging solutions that optimize renewable energy integration, 
+            grid stabilization, and energy cost management.</p>
             <br>
             <p>Qatar Environment and Energy Research Institute (QEERI)</p>
             <p>Current Date: %s</p>
