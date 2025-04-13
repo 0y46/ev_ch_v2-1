@@ -1,3 +1,57 @@
 QStandardPaths: wrong permissions on runtime directory /run/user/1000, 0770 instead of 0700
 qt.qpa.wayland: Wayland does not support QWindow::requestActivate()
 qt.qpa.wayland: Wayland does not support QWindow::requestActivate()
+QStandardPaths: wrong permissions on runtime directory /run/user/1000, 0770 instead of 0700
+qt.qpa.wayland: Wayland does not support QWindow::requestActivate()
+qt.qpa.wayland: Wayland does not support QWindow::requestActivate()
+DataLogger initialized. Logs will be saved to: logs
+Raw packet logs will be saved to: logs/raw
+Initializing unified UDP handler for real data...
+UDP socket initialized on port 46043 for bidirectional communication
+Configured to communicate with server at 127.0.0.1:8888
+Started receive thread - listening for messages
+Unified UDP handler initialized for bidirectional communication
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Warning: No real data available, using simulated data
+Starting application shutdown sequence...
+Stopping timestamp timer...
+Stopping update timer...
+Shutting down data simulator...
+Shutting down unified UDP handler...
+Stopping UDP handler...
+Waiting for receive thread to terminate...
+Closing UDP socket...
+UDP handler stopped
+Shutdown complete.

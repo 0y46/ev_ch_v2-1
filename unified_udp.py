@@ -253,7 +253,16 @@ class UnifiedUDPHandler:
             print(f"UDP socket initialized on port {self.local_port} for bidirectional communication")
             print(f"Configured to communicate with server at {self.server_ip}:{self.server_port}")
             
-            # No hello packet needed per mentor's guidance
+            # This can be removed if real hardware doesn't require it
+            # if self.socket:
+            #     try:
+            #         # Just send table ID 1 to request grid settings
+            #         init_message = "1"
+            #         self.socket.sendto(init_message.encode('utf-8'), (self.server_ip, self.server_port))
+            #         print("Sent initial parameter request to establish connection")
+            #     except:
+            #         pass  # Fail silently if this doesn't work
+            #     # No hello packet needed per mentor's guidance
             
             return True
             
